@@ -1,5 +1,5 @@
 <template>
-	<a-page-header title="创建Bot" sub-title="" backIcon=false>
+	<a-page-header title="创建Bot" sub-title="Create Bot" backIcon=false>
 		<a-row type="flex" justify="center" align="top">
 			<a-col :span="10">
 				<a-card title="登录信息" :bordered="false" style="width: 100%">

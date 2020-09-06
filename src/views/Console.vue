@@ -1,5 +1,6 @@
 <template>
-	<a-page-header title="控制台" sub-title="" backIcon=false>
+	
+	<a-page-header title="控制台" sub-title="Console" backIcon=false>
 		<template v-slot:extra>
 			<a-checkbox v-model:checked="showNetLog" @change="filterChange">
 				网络日志
@@ -11,19 +12,18 @@
 				<a-select-option value="全部">
 					全部
 				</a-select-option>
-				<a-select-option value="lucy">
-					Lucy
-				</a-select-option>
-				<a-select-option value="disabled" disabled>
-					Disabled
-				</a-select-option>
-				<a-select-option value="Yiminghe">
-					yiminghe
-				</a-select-option>
+				
+				<template v-for="bot in bots" key = "bs">
+					<a-select-option :value="bot.nick">
+						{{bot.nick}}
+					</a-select-option>
+				</template>
+				
+				
 			</a-select>
 
-			<a-button>
-				<template v-slot:icon @click="clearConsole">
+			<a-button @click="clearConsole">
+				<template v-slot:icon>
 					<DeleteOutlined />
 				</template>
 				清空日志
@@ -44,14 +44,10 @@
 			
 		</template>
 
-		<a-list item-layout="horizontal" :data-source="data" class="console-content">
+		<a-list item-layout="horizontal" :data-source="logs" class="console-content" size="small">
 			<template v-slot:renderItem="{ item, index }">
 				<a-list-item>
-					<a-list-item-meta description="">
-						<template v-slot:title>
-							<span>{{ item.title }}</span>
-						</template>
-					</a-list-item-meta>
+					{{ item.echo }}
 				</a-list-item>
 			</template>
 		</a-list>
@@ -72,27 +68,29 @@
 				showBotLog: true,
 				botFilter: "全部",
 				sendCommandVisible:false,
-				command:"echo 'Hello'"
+				command:"echo 'Hello'",
+				logs:[]
 			};
 		},
 		components: {
 			DeleteOutlined,
 			SendOutlined
 		},
-		props: {
-			data: Object
+		props:{
+			bots:Object
 		},
 		methods: {
 			filterChange() {
 
 			},
 			clearConsole(){
-				
+				this.logs.length = 0
 			},
 			sendCommand(){
 				this.sendCommandVisible = true
 			},
 			sendCommandOk(e){
+				this.logs.unshift({ echo :">> " + this.command})
 				this.sendCommandVisible = false
 			}
 			

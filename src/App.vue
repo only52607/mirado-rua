@@ -1,12 +1,5 @@
 <template>
   <div id="app">
-    <div id="nav">
-      <router-link to="/">Home</router-link> |
-      <router-link to="/about">About</router-link> |
-	   <router-link to="/anttest">Ant Test</router-link> |
-	   <router-link to="/nav">Nav View</router-link>
-	   <router-link to="/auth">Auth</router-link>
-    </div>
       <router-view></router-view>
   </div>
 </template>
@@ -18,6 +11,7 @@
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
+  height: 100%;
 }
 
 #nav {
