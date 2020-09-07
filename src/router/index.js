@@ -5,7 +5,7 @@ import {
 
 const routes = [{
 		path: '/',
-		name: 'Home',
+		name: 'home',
 		component: () => import('../views/Home.vue'),
 		beforeEnter: (to, from, next) => {
 			if (false) {
@@ -17,34 +17,39 @@ const routes = [{
 		children: [
 			{
 				path: 'console',
-				name: 'Console',
+				name: 'console',
 				component: () => import('../views/Console.vue'),
 			},
 			{
 				path: 'bots/:id',
-				name: 'BotInfo',
-				component: () => import('../views/BotInfo.vue'),
+				name: 'bots',
+				component: () => import('../views/Bot.vue'),
 			},
 			{
 				path: 'newbot',
-				name: 'CreateBot',
+				name: 'newbot',
 				component: () => import('../views/CreateBot.vue'),
 			},
 			{
 				path: 'scripts',
-				name: 'Scripts',
+				name: 'scripts',
 				component: () => import('../views/Scripts.vue'),
 			},
 			{
+				path: 'editor/:name',
+				name: 'editor',
+				component: () => import('../views/FileEditor.vue'),
+			},
+			{
 				path: 'server',
-				name: 'Server',
-				component: () => import('../views/ServerInfo.vue'),
+				name: 'server',
+				component: () => import('../views/Server.vue'),
 			},
 		]
 	},
 	{
 		path: '/auth',
-		name: "Auth",
+		name: "auth",
 		component: () => import('../views/Auth.vue')
 	}
 ]

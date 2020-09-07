@@ -18,39 +18,22 @@
 						{{bot.nick}}
 					</a-select-option>
 				</template>
-				
-				
 			</a-select>
 
 			<a-button @click="clearConsole">
-				<template v-slot:icon>
-					<DeleteOutlined />
-				</template>
+				<DeleteOutlined v-slot:icon/>
 				清空日志
 			</a-button>
 
-			<a-button type="primary" @click="sendCommand">
-				<template v-slot:icon>
-					<SendOutlined />
-				</template>
+			<a-button type="primary" @click="sendCommandVisible=true">
+				<SendOutlined v-slot:icon/>
 				发送命令
 			</a-button>
 			
-			<a-modal v-model:visible="sendCommandVisible" title="发送命令" @ok="sendCommandOk">
-			      <div style="margin-bottom: 16px">
-			            <a-input addon-before=">>" v-model:value="command" />
-			       </div>
-			</a-modal>
-			
+			<SendCommandModal :show=sendCommandVisible @send="sendCommandVisible = false; sendCommand($event)"/>
 		</template>
-
-		<a-list item-layout="horizontal" :data-source="logs" class="console-content" size="small">
-			<template v-slot:renderItem="{ item, index }">
-				<a-list-item>
-					{{ item.echo }}
-				</a-list-item>
-			</template>
-		</a-list>
+		<ConsoleList :data-source="logs"></ConsoleList>
+		
 	</a-page-header>
 
 </template>
@@ -60,7 +43,10 @@
 		DeleteOutlined,
 		SendOutlined
 	} from '@ant-design/icons-vue';
-
+	
+	import ConsoleList from '@/components/ConsoleList.vue'
+	import SendCommandModal from '@/components/SendCommandModal.vue'
+	
 	export default {
 		data() {
 			return {
@@ -74,7 +60,9 @@
 		},
 		components: {
 			DeleteOutlined,
-			SendOutlined
+			SendOutlined,
+			ConsoleList,
+			SendCommandModal
 		},
 		props:{
 			bots:Object
@@ -86,21 +74,13 @@
 			clearConsole(){
 				this.logs.length = 0
 			},
-			sendCommand(){
-				this.sendCommandVisible = true
-			},
-			sendCommandOk(e){
-				this.logs.unshift({ echo :">> " + this.command})
-				this.sendCommandVisible = false
+			sendCommand(e){
+				this.logs.unshift({ message :">> " + e.content})
 			}
-			
 		}
 	};
 </script>
 
 <style>
-	.console-content {
-		height: 500px;
-		overflow-y: scroll;
-	}
+
 </style>

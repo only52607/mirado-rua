@@ -2,96 +2,30 @@
 	<a-page-header title="脚本" sub-title="Script" backIcon=false>
 		<a-tabs>
 			<a-tab-pane key="runningScripts" tab="正在运行的脚本" force-render>
-					<a-button class="button-op"> 
-						<template v-slot:icon>
-					      <FileAddOutlined />
-					    </template>
-						从已上传文件添加 
-					</a-button>
-					<a-table :columns="columnsScripts" :data-source="scripts" :loading="loadingScripts">
-						<template v-slot:version="{ text: version }">
-							<span>
-								<a-tag :key="version" color="green">
-									{{version}}
-								</a-tag>
-							</span>
-						</template>
-						<template v-slot:action="{ text, record, index }">
-							<span>
-								<a-dropdown>
-									<a class="ant-dropdown-link"> 更多
-										<DownOutlined /> </a>
-									<template v-slot:overlay>
-										<a-menu>
-											<a-menu-item>
-												<span @click="removeRunningScript(index)">
-													<DeleteOutlined />移除</span>
-											</a-menu-item>
-											<a-menu-item>
-												<span @click="editRunningScript(index)">
-													<EditOutlined />编辑</span>
-											</a-menu-item>
-											<a-menu-item>
-												<span @click="reloadRunningScript(index)">
-													<ReloadOutlined />重载</span>
-											</a-menu-item>
-											<a-menu-item>
-												<span @click="downloadRunningScript(index)">
-													<CloudDownloadOutlined />下载</span>
-											</a-menu-item>
-										</a-menu>
-									</template>
-								</a-dropdown>
-							</span>
-						</template>
-					</a-table>
-				
+				<a-button class="button-op">
+					<FileAddOutlined v-slot:icon/>
+					从已上传文件添加
+				</a-button>
+				<ScriptInfoTable :loading="loadingScripts" :data-source="scripts" @edit="editRunningScript" @reload="reloadRunningScript"
+				 @download="downloadRunningScript" @remove="removeRunningScript"></ScriptInfoTable>
 			</a-tab-pane>
+			
 			<a-tab-pane key="localScripts" tab="已上传文件" force-render>
-				<a-upload
-				    v-model:fileList="fileList"
-				    name="file"
-				    :multiple="true"
-				    action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
-				    :headers="headers"
-				    @change="handleChange"
-					class="button-op"
-				  >
-				    <a-button style="z-index: 20;">
-				    <template v-slot:icon>
-				          <UploadOutlined />
-				        </template>
-				    	上传文件
-				    </a-button>
-				  </a-upload>
-				
-				
-				
-				<a-table :columns="columnsFiles" :data-source="files" :loading="loadingFiles">
-					<template v-slot:action="{ text, record, index }">
-						<span>
-							<a @click="removeFile(index)">
-								<DeleteOutlined />删除</a>
-							<a-divider type="vertical" />
-							<a @click="editFile(index)">
-								<EditOutlined />编辑</a>
-							<a-divider type="vertical" />
-							<a @click="downloadFile(index)">
-								<CloudDownloadOutlined />下载</a>
-							<a-divider type="vertical" />
-								<a-button type="primary"  @click="loadFile(index)">
-								<template v-slot:icon>
-								      <ThunderboltOutlined />
-								    </template>
-									加载
-								</a-button>
-						</span>
-					</template>
-				</a-table>
+				<a-upload v-model:fileList="fileList" name="file" :multiple="true" action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
+				 :headers="headers" @change="handleChange" class="button-op">
+					<a-button style="z-index: 20;">
+						<UploadOutlined v-slot:icon/>
+						上传文件
+					</a-button>
+				</a-upload>
+				<FileInfoTable :loading="loadingFiles" :data-source="files" @edit="editFile" @load="loadFile"
+				 @download="downloadRunningScript" @remove="removeRunningScript"></FileInfoTable>
 			</a-tab-pane>
+			
 			<a-tab-pane key="remoteScripts" tab="云脚本中心" force-render>
 				云脚本中心
 			</a-tab-pane>
+			
 		</a-tabs>
 	</a-page-header>
 </template>
@@ -99,47 +33,12 @@
 
 <script>
 	import {
-		DownOutlined,
-		DeleteOutlined,
-		EditOutlined,
-		ReloadOutlined,
-		CloudDownloadOutlined,
 		FileAddOutlined,
-		UploadOutlined,
-		ThunderboltOutlined
+		UploadOutlined
 	} from '@ant-design/icons-vue';
 
-	const columnsScripts = [{
-			dataIndex: 'name',
-			title: '名称',
-		},
-		{
-			title: '作者',
-			dataIndex: 'author'
-		},
-		{
-			title: '描述',
-			dataIndex: 'description'
-		},
-		{
-			title: '版本',
-			dataIndex: 'version',
-			slots: {
-				customRender: 'version'
-			},
-		},
-		{
-			title: '源文件',
-			dataIndex: 'file'
-		},
-		{
-			title: '更多',
-			key: 'action',
-			slots: {
-				customRender: 'action' //注册一个名称为action的slot，并将值赋予customRender
-			},
-		},
-	];
+	import ScriptInfoTable from '@/components/ScriptInfoTable'
+	import FileInfoTable from '@/components/FileInfoTable'
 
 	const scripts = [{
 			key: 0,
@@ -159,24 +58,6 @@
 		}
 	]
 
-
-	const columnsFiles = [{
-			dataIndex: 'name',
-			title: '文件名',
-		},
-		{
-			title: '大小',
-			dataIndex: 'size'
-		},
-		{
-			title: '操作',
-			key: 'action',
-			slots: {
-				customRender: 'action' //注册一个名称为action的slot，并将值赋予customRender
-			},
-		},
-	];
-
 	const files = [{
 		key: 0,
 		name: 'aaa.lua',
@@ -186,21 +67,15 @@
 
 	export default {
 		components: {
-			DownOutlined,
-			DeleteOutlined,
-			EditOutlined,
-			ReloadOutlined,
-			CloudDownloadOutlined,
 			FileAddOutlined,
 			UploadOutlined,
-			ThunderboltOutlined
+			ScriptInfoTable,
+			FileInfoTable
 		},
 		data() {
 			return {
 				scripts,
 				files,
-				columnsScripts,
-				columnsFiles,
 				loadingScripts: false,
 				loadingFiles: false
 			};
@@ -212,12 +87,15 @@
 			},
 			editRunningScript(index) {
 				console.log("edit" + index)
+				this.$router.push({name:"editor",params:{
+					name:this.scripts[index].file}
+				})
 			},
 			reloadRunningScript(index) {
 				console.log("reload" + index)
 			},
 			downloadRunningScript(index) {
-
+				this.loadingScripts = true
 			},
 			removeFile(index) {
 				this.loading = true
@@ -230,15 +108,15 @@
 				console.log("load" + index)
 			},
 			downloadFile(index) {
-			
+				
 			}
 		}
 	}
 </script>
 
 <style>
-	.button-op{
-		float: left; 
+	.button-op {
+		float: left;
 		margin-bottom: 10px;
 		z-index: 10;
 	}
