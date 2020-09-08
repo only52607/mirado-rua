@@ -8,11 +8,7 @@ const routes = [{
 		name: 'home',
 		component: () => import('../views/Home.vue'),
 		beforeEnter: (to, from, next) => {
-			if (false) {
-				next("/auth")
-			} else {
-				next()
-			}
+			next()
 		},
 		children: [
 			{

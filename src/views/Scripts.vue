@@ -1,123 +1,173 @@
 <template>
 	<a-page-header title="脚本" sub-title="Script" backIcon=false>
-		<a-tabs>
-			<a-tab-pane key="runningScripts" tab="正在运行的脚本" force-render>
-				<a-button class="button-op">
-					<FileAddOutlined v-slot:icon/>
-					从已上传文件添加
-				</a-button>
+		<a-tabs v-model:activeKey="activeTab">
+			<a-tab-pane key="0" tab="正在运行的脚本" force-render>
+				<a-space class="float-left margin-bottom">
+					<ButtonAddFile class="float-left index-top" @click="activeTab='1'" text="从已上传文件添加" />
+					<ButtonRefresh class="float-left index-top" @click="fetchScripts" text="刷新" />
+				</a-space>
+
 				<ScriptInfoTable :loading="loadingScripts" :data-source="scripts" @edit="editRunningScript" @reload="reloadRunningScript"
-				 @download="downloadRunningScript" @remove="removeRunningScript"></ScriptInfoTable>
+				 @download="downloadRunningScript" @remove="removeRunningScript" />
 			</a-tab-pane>
-			
-			<a-tab-pane key="localScripts" tab="已上传文件" force-render>
-				<a-upload v-model:fileList="fileList" name="file" :multiple="true" action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
-				 :headers="headers" @change="handleChange" class="button-op">
-					<a-button style="z-index: 20;">
-						<UploadOutlined v-slot:icon/>
-						上传文件
-					</a-button>
-				</a-upload>
-				<FileInfoTable :loading="loadingFiles" :data-source="files" @edit="editFile" @load="loadFile"
-				 @download="downloadRunningScript" @remove="removeRunningScript"></FileInfoTable>
+
+			<a-tab-pane key="1" tab="已上传文件" force-render>
+				<a-space class="float-left margin-bottom">
+					<a-upload name="file" :multiple="false" :action="uploadAction" class="float-left">
+						<ButtonUpload class="index-top" text="上传文件" />
+					</a-upload>
+					<ButtonAddFile class="float-left index-top" text="创建空文件" />
+					<ButtonRefresh class="float-left index-top" @click="fetchFiles" text="刷新" />
+				</a-space>
+				<FileInfoTable :loading="loadingFiles" :data-source="files" @edit="editFile" @load="loadFile" @download="downloadFile"
+				 @remove="removeRunningScript" />
 			</a-tab-pane>
-			
-			<a-tab-pane key="remoteScripts" tab="云脚本中心" force-render>
+
+			<a-tab-pane key="2" tab="云脚本中心" force-render>
 				云脚本中心
 			</a-tab-pane>
-			
+
 		</a-tabs>
 	</a-page-header>
 </template>
 
 
 <script>
-	import {
-		FileAddOutlined,
-		UploadOutlined
-	} from '@ant-design/icons-vue';
-
 	import ScriptInfoTable from '@/components/ScriptInfoTable'
 	import FileInfoTable from '@/components/FileInfoTable'
-
-	const scripts = [{
-			key: 0,
-			name: '复读机',
-			author: "ooooonly",
-			description: '简单的复读机脚本',
-			version: 'v1.0',
-			file: "repeater.lua"
-		},
-		{
-			key: 1,
-			name: '复读机',
-			author: "ooooonly",
-			description: '简单的复读机脚本',
-			version: 'v1.0',
-			file: "repeater.lua"
-		}
-	]
-
-	const files = [{
-		key: 0,
-		name: 'aaa.lua',
-		size: 566
-	}]
-
+	import ButtonRefresh from '@/components/buttons/ButtonRefresh'
+	import ButtonUpload from '@/components/buttons/ButtonUpload'
+	import ButtonAddFile from '@/components/buttons/ButtonAddFile'
+	import {
+		Downloader
+	} from '@/utils/downloader.js'
 
 	export default {
 		components: {
-			FileAddOutlined,
-			UploadOutlined,
 			ScriptInfoTable,
-			FileInfoTable
+			FileInfoTable,
+			ButtonRefresh,
+			ButtonUpload,
+			ButtonAddFile
 		},
 		data() {
 			return {
-				scripts,
-				files,
+				scripts: [],
+				files: [],
 				loadingScripts: false,
-				loadingFiles: false
+				loadingFiles: false,
+				uploadAction: "",
+				activeTab: "0"
 			};
 		},
 		methods: {
 			removeRunningScript(index) {
-				this.loading = true
-				console.log("remove" + index)
-			},
-			editRunningScript(index) {
-				console.log("edit" + index)
-				this.$router.push({name:"editor",params:{
-					name:this.scripts[index].file}
+				api.delete("/scripts/" + index).then(
+					response => {
+						this.$message.success("删除成功！")
+						this.fetchScripts()
+					}
+				).catch(err => {
+					this.$message.error("删除失败！")
 				})
 			},
-			reloadRunningScript(index) {
-				console.log("reload" + index)
+			editRunningScript(index) {
+				this.$router.push({
+					name: "editor",
+					params: {
+						name: this.scripts[index].file
+					}
+				})
 			},
+			reloadRunningScript(index) {},
 			downloadRunningScript(index) {
-				this.loadingScripts = true
+				let filename = this.scripts[index].file
+				api.get("/files/" + filename + "/file").then(response => {
+					Downloader.downloadText(response.data, filename)
+				})
 			},
 			removeFile(index) {
-				this.loading = true
-				console.log("remove" + index)
+				let name = this.files[index].name
+				api.delete("/files/" + name).then(
+					response => {
+						this.$message.success("删除成功！")
+						this.fetchFiles()
+					}
+				).catch(err => {
+					this.$message.error("删除失败！")
+				})
 			},
 			editFile(index) {
-				console.log("edit" + index)
+				this.$router.push({
+					name: "editor",
+					params: {
+						name: this.files[index].name
+					}
+				})
 			},
 			loadFile(index) {
-				console.log("load" + index)
+				this.files[index].loading = true
+				api.post("/scripts", this.files[index]).then(response => {
+					this.$notification.success({
+						message: '载入成功',
+						description: '成功加载一个脚本',
+					})
+					this.fetchScripts()
+				}).catch(err => {
+					this.$error({
+						title: '加载脚本失败',
+						content: err.response.data.error,
+					})
+				})
+				this.files[index].loading = false
 			},
 			downloadFile(index) {
-				
+				let filename = this.files[index].name
+				api.get("/files/" + filename + "/file").then(response => {
+					Downloader.downloadText(response.data, filename)
+				})
+			},
+			fetchFiles() {
+				let v = this
+				v.loadingFiles = true
+				api.get("/files").then(response => {
+					v.files = response.data
+					v.loadingFiles = false
+				}).catch(err => {
+					this.$message.error("加载失败！" + err)
+					v.loadingFiles = false
+				})
+			},
+			fetchScripts() {
+				let v = this
+				v.loadingScripts = true
+				api.get("/scripts").then(response => {
+					v.scripts = response.data
+					v.loadingScripts = false
+				}).catch(err => {
+					this.$message.error("加载失败！" + err)
+					v.loadingScripts = false
+				})
 			}
+		},
+		mounted() {
+			this.uploadAction = api.baseURL + '/files'
+			this.fetchFiles()
+			this.fetchScripts()
 		}
 	}
 </script>
 
 <style>
-	.button-op {
+	.float-left {
 		float: left;
+	}
+
+	.margin-bottom {
 		margin-bottom: 10px;
+	}
+
+	.index-top {
 		z-index: 10;
 	}
 </style>

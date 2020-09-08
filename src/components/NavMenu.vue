@@ -74,7 +74,10 @@
 		},
 		mounted() {
 			this.bots = fetchBots()
-			this.selectedKeys = ["/console"]
+			if (this.selectedKeys.length==0){
+				this.selectedKeys = ["/console"]
+			}
+			
 		}
 	}
 	

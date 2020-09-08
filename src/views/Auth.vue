@@ -1,7 +1,7 @@
 <template>
 	<div class="body">
 		<a-row type="flex" justify="center" align="top" :bordered="false" class="center">
-			<a-col :span="8">
+			<a-col  :xs="24" :sm="20" :md="12" :lg="8" :xl="6" >
 				<a-card title="验证 MIRAODO-RUA" style="width: 100%">
 					<a-space direction="vertical" size="middle">
 						<a-input placeholder="用户名" v-model:value="username" ref="userNameInput">
@@ -14,14 +14,14 @@
 								<KeyOutlined />
 							</template>
 						</a-input-password>
-						<a-button type="primary" @click="auth"> 确定 </a-button>
+						<a-button type="primary" @click="auth" :loading="checking"> 确定 </a-button>
 					</a-space>
 				</a-card>
 			</a-col>
 		</a-row>
 	</div>
 	<a-layout-footer class="footer">
-	      MIRAIDO - RUA ©2020
+		MIRAIDO - RUA ©2020
 	</a-layout-footer>
 </template>
 <script>
@@ -37,25 +37,32 @@
 		data() {
 			return {
 				username: "",
-				password: ""
+				password: "",
+				checking: false
 			}
 		},
 		methods: {
 			auth() {
-				let hide = this.$message.loading('验证中', 0)
-				setTimeout(hide, 1000)
-				if (this.username != this.password) {
-					this.$error({
-						title: '验证失败',
-						content: '用户名或密码错误！',
-					});
-					return
-				}
-				this.$message.success(
-					'验证通过',
-					2,
+				this.checking = true
+				api.post('/auth', {
+					username: this.username,
+					password: this.password
+				}).then(
+					response => {
+						this.$message.success('验证通过', 2)
+						this.$router.replace("/")
+						this.checking = false
+					}
+				).catch(
+					response => {
+						this.$error({
+							title: '验证失败',
+							content: '用户名或密码错误！',
+						})
+						this.checking = false
+					}
 				)
-				this.$router.replace("/")
+
 			}
 		},
 		components: {
@@ -71,14 +78,16 @@
 		display:inline-block */
 		margin-top: 10%;
 	}
-	.body{
-		background:#ECECEC; 
-		padding:30px; 
+
+	.body {
+		background: #ECECEC;
+		padding: 30px;
 		height: 90%;
-		
+
 	}
-	.footer{
-		background:#ECECEC; 
+
+	.footer {
+		background: #ECECEC;
 		height: 10%;
 		textAlign: 'center';
 	}

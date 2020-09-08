@@ -8,7 +8,9 @@
   },
   "dependencies": {
     "ant-design-vue": "^2.0.0-beta.6",
+    "axios": "^0.20.0",
     "core-js": "^3.6.5",
+    "js-base64": "^3.4.5",
     "vue": "^3.0.0-0",
     "vue-codemirror": "^4.0.6",
     "vue-router": "^4.0.0-0"
