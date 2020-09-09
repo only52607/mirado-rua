@@ -21,10 +21,9 @@
 				</a-select>
 				
 				<ButtonDelete  @click="clearConsole" text="清空日志" />
-				<ButtonSend  type="primary" @click="sendCommandVisible=true" text="发送命令" />
-				
+				<ButtonSend type="primary"  @click="showInputCommand=true" text="发送命令" />
 			</a-space>
-			<SendCommandModal :show=sendCommandVisible @send="sendCommandVisible = false; sendCommand($event)" />
+			<InputModal title="发送命令" before=">>" v-model:visible="showInputCommand" @finish="sendCommand" />
 		</template>
 		<ConsoleList :data-source="logs"></ConsoleList>
 
@@ -34,7 +33,7 @@
 
 <script>
 	import ConsoleList from '@/components/ConsoleList.vue'
-	import SendCommandModal from '@/components/SendCommandModal.vue'
+	import InputModal from '@/components/InputModal.vue'
 	
 	import ButtonDelete from '@/components/buttons/ButtonDelete.vue'
 	import ButtonSend from '@/components/buttons/ButtonSend.vue'
@@ -45,14 +44,14 @@
 				showNetLog: true,
 				showBotLog: true,
 				botFilter: "全部",
-				sendCommandVisible: false,
+				showInputCommand: false,
 				command: "echo 'Hello'",
 				logs: []
 			};
 		},
 		components: {
 			ConsoleList,
-			SendCommandModal,
+			InputModal,
 			ButtonDelete,
 			ButtonSend
 		},
@@ -66,10 +65,9 @@
 			clearConsole() {
 				this.logs.length = 0
 			},
-			sendCommand(e) {
-				this.logs.unshift({
-					message: ">> " + e.content
-				})
+			sendCommand(content) {
+				this.logs.unshift({message: ">> " + content})
+				this.showInputCommand = false
 			}
 		}
 	};

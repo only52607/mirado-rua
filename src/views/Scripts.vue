@@ -16,11 +16,12 @@
 					<a-upload name="file" :multiple="false" :action="uploadAction" class="float-left">
 						<ButtonUpload class="index-top" text="上传文件" />
 					</a-upload>
-					<ButtonAddFile class="float-left index-top" text="创建空文件" />
+					<ButtonAddFile class="float-left index-top" @click="showCreateFile=true" text="创建空文件" />
 					<ButtonRefresh class="float-left index-top" @click="fetchFiles" text="刷新" />
 				</a-space>
+				<InputModal title="创建文件" before="文件名" v-model:visible="showCreateFile" @finish="createFile" />
 				<FileInfoTable :loading="loadingFiles" :data-source="files" @edit="editFile" @load="loadFile" @download="downloadFile"
-				 @remove="removeRunningScript" />
+				 @remove="removeFile" />
 			</a-tab-pane>
 
 			<a-tab-pane key="2" tab="云脚本中心" force-render>
@@ -38,6 +39,8 @@
 	import ButtonRefresh from '@/components/buttons/ButtonRefresh'
 	import ButtonUpload from '@/components/buttons/ButtonUpload'
 	import ButtonAddFile from '@/components/buttons/ButtonAddFile'
+	
+	import InputModal from '@/components/InputModal.vue'
 	import {
 		Downloader
 	} from '@/utils/downloader.js'
@@ -48,7 +51,8 @@
 			FileInfoTable,
 			ButtonRefresh,
 			ButtonUpload,
-			ButtonAddFile
+			ButtonAddFile,
+			InputModal
 		},
 		data() {
 			return {
@@ -57,7 +61,8 @@
 				loadingScripts: false,
 				loadingFiles: false,
 				uploadAction: "",
-				activeTab: "0"
+				activeTab: "0",
+				showCreateFile:false
 			};
 		},
 		methods: {
@@ -80,6 +85,16 @@
 				})
 			},
 			reloadRunningScript(index) {},
+			createFile(name){
+				api.put("/files/" + name + "/raw", "").then(response => {
+					this.$message.success("创建成功")
+					this.fetchScripts()
+					this.showCreateFile = false
+				}).catch(err => {
+					this.$message.error("创建失败")
+					this.showCreateFile = false
+				})
+			},
 			downloadRunningScript(index) {
 				let filename = this.scripts[index].file
 				api.get("/files/" + filename + "/file").then(response => {

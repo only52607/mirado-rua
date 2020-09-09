@@ -1,7 +1,7 @@
 <template>
-	<a-modal v-model:visible="show" title="发送命令" @ok="ok">
+	<a-modal ref="md" @ok="ok">
 	      <div style="margin-bottom: 16px">
-	            <a-input addon-before=">>" v-model:value="v" />
+	            <a-input :addon-before="before" v-model:value="value" />
 	       </div>
 	</a-modal>
 </template>
@@ -10,19 +10,16 @@
 	export default{
 		data(){
 			return {
-				v:"echo 'hello'"
+				value:""
 			}
 		},
 		methods:{
 			ok(){
-				this.$emit("send",{
-						content : this.v
-					}
-				)
+				this.$emit("finish",this.value)
 			}
 		},
 		props:{
-			show:Boolean
+			before:String
 		}
 	}
 </script>

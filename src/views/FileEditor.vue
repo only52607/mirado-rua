@@ -61,7 +61,7 @@
 
 <style>
 	.CodeMirror {
-	    font-family: Avenir, Helvetica, Arial, sans-serif;
+	    font-family: Consolas,monospace,sans-serif,Avenir,Helvetica,Arial;
 		text-align: left;
 		min-width: 0 !important;
 		min-height: 0 !important;
