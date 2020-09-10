@@ -21,7 +21,7 @@
 				</a-space>
 				<InputModal title="创建文件" before="文件名" v-model:visible="showCreateFile" @finish="createFile" />
 				<FileInfoTable :loading="loadingFiles" :data-source="files" @edit="editFile" @load="loadFile" @download="downloadFile"
-				 @remove="removeFile" />
+				 @remove="removeFile" @onFileNameChange="onFileNameChange" />
 			</a-tab-pane>
 
 			<a-tab-pane key="2" tab="云脚本中心" force-render>
@@ -39,8 +39,8 @@
 	import ButtonRefresh from '@/components/buttons/ButtonRefresh'
 	import ButtonUpload from '@/components/buttons/ButtonUpload'
 	import ButtonAddFile from '@/components/buttons/ButtonAddFile'
-	
 	import InputModal from '@/components/InputModal.vue'
+
 	import {
 		Downloader
 	} from '@/utils/downloader.js'
@@ -62,17 +62,15 @@
 				loadingFiles: false,
 				uploadAction: "",
 				activeTab: "0",
-				showCreateFile:false
+				showCreateFile: false
 			};
 		},
 		methods: {
 			removeRunningScript(index) {
-				api.delete("/scripts/" + index).then(
-					response => {
-						this.$message.success("删除成功！")
-						this.fetchScripts()
-					}
-				).catch(err => {
+				api.delete("/scripts/" + index).then(response => {
+					this.$message.success("删除成功！")
+					this.fetchScripts()
+				}).catch(err => {
 					this.$message.error("删除失败！")
 				})
 			},
@@ -84,11 +82,13 @@
 					}
 				})
 			},
-			reloadRunningScript(index) {},
-			createFile(name){
+			reloadRunningScript(index) {
+				//TODO
+			},
+			createFile(name) {
 				api.put("/files/" + name + "/raw", "").then(response => {
 					this.$message.success("创建成功")
-					this.fetchScripts()
+					this.fetchFiles()
 					this.showCreateFile = false
 				}).catch(err => {
 					this.$message.error("创建失败")
@@ -103,12 +103,10 @@
 			},
 			removeFile(index) {
 				let name = this.files[index].name
-				api.delete("/files/" + name).then(
-					response => {
-						this.$message.success("删除成功！")
-						this.fetchFiles()
-					}
-				).catch(err => {
+				api.delete("/files/" + name).then(response => {
+					this.$message.success("删除成功！")
+					this.fetchFiles()
+				}).catch(err => {
 					this.$message.error("删除失败！")
 				})
 			},
@@ -146,6 +144,7 @@
 				let v = this
 				v.loadingFiles = true
 				api.get("/files").then(response => {
+					v.files.splice(0)
 					v.files = response.data
 					v.loadingFiles = false
 				}).catch(err => {
@@ -157,11 +156,24 @@
 				let v = this
 				v.loadingScripts = true
 				api.get("/scripts").then(response => {
+					v.scripts.splice(0)
 					v.scripts = response.data
 					v.loadingScripts = false
 				}).catch(err => {
 					this.$message.error("加载失败！" + err)
 					v.loadingScripts = false
+				})
+			},
+			onFileNameChange(index, key, name) {
+				let originName = this.files[index].name
+				api.put("/files/" + originName + "/name", {
+					name
+				}).then(response => {
+					this.$message.success("重命名成功")
+					this.fetchFiles()
+				}).catch(err => {
+					this.$message.error("重命名失败")
+					this.files[index].name = originName
 				})
 			}
 		},

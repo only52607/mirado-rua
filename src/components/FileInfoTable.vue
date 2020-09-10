@@ -21,6 +21,11 @@
 				</a-popconfirm>
 			</span>
 		</template>
+		
+		<template v-slot:name="{ text, record }">
+		    <editable-cell :text="text" @change="val => $emit('onFileNameChange',record.key, 'name', val)" />
+		</template>
+		
 	</a-table>
 </template>
 
@@ -31,11 +36,14 @@
 		CloudDownloadOutlined,
 		ThunderboltOutlined
 	} from '@ant-design/icons-vue';
-
+	
+	import EditableCell from '@/components/EditableCell.vue'
+	
 	const columns = [{
 			title: '文件名',
 			dataIndex: 'name',
 			fixed: 'left',
+			slots: { customRender: 'name' },
 		},
 		{
 			title: '大小',
@@ -62,10 +70,13 @@
 			DeleteOutlined,
 			EditOutlined,
 			CloudDownloadOutlined,
-			ThunderboltOutlined
+			ThunderboltOutlined,
+			EditableCell
 		},
 		props:{
 			
+		},
+		 methods: {
 		}
 	}
 </script>

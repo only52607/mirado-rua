@@ -1,5 +1,5 @@
 <template>
-	<a-menu mode="inline" v-model:selectedKeys="selectedKeys" v-model:openKeys="openKeys" :style="{ height: '100%', borderRight: 0 }">
+	<a-menu mode="inline" :style="{ height: '100%', borderRight: 0 }">
 		<a-menu-item key="/console">
 			<CodeOutlined />
 			<span>控制台</span>
@@ -22,8 +22,6 @@
 			<span>管理</span>
 		</a-menu-item>
 	</a-menu>
-	
-	
 </template>
 
 <script>
@@ -35,21 +33,7 @@
 		ControlOutlined
 	} from '@ant-design/icons-vue'
 	
-	function fetchBots() {
-		return [{
-				id: 2308065470,
-				nick: "OOOOONLY",
-				avatarUrl: "https://c-ssl.duitang.com/uploads/item/202003/28/20200328111842_ijsbv.thumb.1000_0.jpg",
-				protocol: "ANDROID_WATCH"
-			},
-			{
-				id: 2912775665,
-				nick: "Appoint",
-				avatarUrl: "https://c-ssl.duitang.com/uploads/item/202003/28/20200328111842_ijsbv.thumb.1000_0.jpg",
-				protocol: "ANDROID_WATCH"
-			}
-		]
-	}
+	import {bots,updateBots} from '@/utils/bots.js'
 	
 	export default{
 		components:{
@@ -59,25 +43,14 @@
 			AppstoreOutlined,
 			ControlOutlined
 		},
-		data() {
+		data(){
 			return {
-				selectedKeys: [],
-				collapsed: false,
-				openKeys: [],
-				bots: null
-			};
-		},
-		watch: {
-			selectedKeys(k) {
-				this.$router.replace(k[0])
+				bots
 			}
 		},
 		mounted() {
-			this.bots = fetchBots()
-			if (this.selectedKeys.length==0){
-				this.selectedKeys = ["/console"]
-			}
-			
+			// console.log(bots)
+			//console.log(this.bots)
 		}
 	}
 	

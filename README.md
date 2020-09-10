@@ -1,19 +1,44 @@
+---
+typora-root-url: ./
+---
+
 # mirado-rua
 
-## Project setup
+基于vue3.0与ant-design-vue的bot管理后端，目前已适配[lua-mirai](https://github.com/only52607/lua-mirai)，项目仍在开发阶段。<br />
+
+
+
+## 快速预览
+
+### 运行[lua-mirai](https://github.com/only52607/lua-mirai)后端
+
+```
+java -jar lua-mirai.jar serve
+```
+
+## 初始化本项目
+
 ```
 npm install
 ```
 
-### Compiles and hot-reloads for development
+### 开发环境下编译和热加载运行
 ```
 npm run serve
 ```
 
-### Compiles and minifies for production
+### 生产环境下编译和压缩
 ```
 npm run build
 ```
 
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+### 自定义配置
+参阅[Configuration Reference](https://cli.vuejs.org/config/).
+
+
+
+## 应用截图
+
+![screenshots2](/screenshots/screenshots2.png)
+
+![screenshots1](/screenshots/screenshots1.png)

@@ -1,19 +1,11 @@
 <template>
 	<div class="body">
 		<a-row type="flex" justify="center" align="top" :bordered="false" class="center">
-			<a-col  :xs="24" :sm="20" :md="12" :lg="8" :xl="6" >
+			<a-col :xs="24" :sm="20" :md="12" :lg="8" :xl="6">
 				<a-card title="验证 MIRAODO-RUA" style="width: 100%">
 					<a-space direction="vertical" size="middle">
-						<a-input placeholder="用户名" v-model:value="username" ref="userNameInput">
-							<template v-slot:prefix>
-								<user-outlined type="user" />
-							</template>
-						</a-input>
-						<a-input-password v-model:value="password" placeholder="密码">
-							<template v-slot:prefix>
-								<KeyOutlined />
-							</template>
-						</a-input-password>
+						<InputAccount  placeholder="用户名" v-model:value="username" />
+						<InputPassword  placeholder="密码" v-model:value="password" />
 						<a-button type="primary" @click="auth" :loading="checking"> 确定 </a-button>
 					</a-space>
 				</a-card>
@@ -29,9 +21,11 @@
 		UserOutlined,
 		KeyOutlined
 	} from '@ant-design/icons-vue'
-	import {
-		h
-	} from 'vue'
+
+	
+	import InputAccount from '@/components/inputs/InputAccount.vue'
+	import InputPassword from '@/components/inputs/InputPassword.vue'
+	
 	export default {
 		name: "Auth",
 		data() {
@@ -47,25 +41,22 @@
 				api.post('/auth', {
 					username: this.username,
 					password: this.password
-				}).then(
-					response => {
-						this.$message.success('验证通过', 2)
-						this.$router.replace("/")
-						this.checking = false
-					}
-				).catch(
-					response => {
-						this.$error({
-							title: '验证失败',
-							content: '用户名或密码错误！',
-						})
-						this.checking = false
-					}
-				)
-
+				}).then(response => {
+					this.$message.success('验证通过', 2)
+					this.$router.replace("/")
+					this.checking = false
+				}).catch(response => {
+					this.$error({
+						title: '验证失败',
+						content: '用户名或密码错误！',
+					})
+					this.checking = false
+				})
 			}
 		},
 		components: {
+			InputAccount,
+			InputPassword,
 			UserOutlined,
 			KeyOutlined
 		},
@@ -83,7 +74,6 @@
 		background: #ECECEC;
 		padding: 30px;
 		height: 90%;
-
 	}
 
 	.footer {

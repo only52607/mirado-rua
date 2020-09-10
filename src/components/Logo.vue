@@ -1,6 +1,6 @@
 <template>
 	<div class="logo">
-		<DingtalkOutlined /> MIRADO - RUA
+		<!-- <DingtalkOutlined></DingtalkOutlined> -->MIRADO - RUA
 	</div>
 </template>
 
@@ -16,7 +16,7 @@
 <style>
 	.logo {
 		width: 200px;
-		height: 31px;
+		height: 100%;
 		float: left;
 		color: aliceblue;
 		font-size: 18px

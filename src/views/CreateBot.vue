@@ -1,32 +1,16 @@
 <template>
 	<a-page-header title="创建Bot" sub-title="Create Bot" backIcon=false>
 		<a-row type="flex" justify="center" align="top">
-			<a-col :span="10">
+			<a-col :span="16">
 				<a-card title="登录信息" :bordered="false" style="width: 100%">
 					<a-space direction="vertical" size="middle">
-						<a-input placeholder="Account" v-model:value="username" style="width:10px">
-							<template v-slot:prefix>
-								<user-outlined type="user" />
-							</template>
-						</a-input>
-
-						<a-input-password v-model:value="password" placeholder="Password">
-							<template v-slot:prefix>
-								<KeyOutlined />
-							</template>
-						</a-input-password>
-
+						<InputAccount placeholder="Account" v-model:value="id" />
+						<InputPassword placeholder="Password" v-model:value="password" />
 						<span>
-							登录协议： <a-select v-model:value="protocol" @change="protocolChange" style="width:150px">
-								<template v-slot:suffixIcon>
-									<smile-outlined />
-								</template>
-								<a-select-option value="ANDROID_PHONE"> Android Phone </a-select-option>
-								<a-select-option value="ANDROID_PAD"> Android Pad </a-select-option>
-								<a-select-option value="ANDROID_WATCH"> Android Watch </a-select-option>
-							</a-select>
+							登录协议：
+							<SelectProtocols v-model:value="protocol" />
 						</span>
-						<a-button type="primary" @click="create"> 创建Bot </a-button>
+						<a-button type="primary" @click="create" :loading="creating"> 创建Bot </a-button>
 					</a-space>
 				</a-card>
 			</a-col>
@@ -35,50 +19,48 @@
 </template>
 
 <script>
-	import {
-		UserOutlined,
-		KeyOutlined,
-		SmileOutlined
-	} from '@ant-design/icons-vue'
-
-	import {
-		h
-	} from 'vue'
-
+	import InputAccount from '@/components/inputs/InputAccount.vue'
+	import InputPassword from '@/components/inputs/InputPassword.vue'
+	import SelectProtocols from '@/components/selects/SelectProtocols.vue'
+	
 	export default {
 		name: "CreateBot",
 		data() {
 			return {
-				username: "",
+				id: "",
 				password: "",
-				protocol: "ANDROID_PHONE"
+				protocol: "ANDROID_PHONE",
+				creating: false
 			}
 		},
 		methods: {
 			create() {
-				let hide = this.$message.loading('验证中', 0)
-				setTimeout(hide, 1000)
-				if (this.username != this.password) {
-					this.$error({
-						title: '验证失败',
-						content: '用户名或密码错误！',
-					});
-					return
-				}
-				this.$message.success(
-					'验证通过',
-					2,
-				)
-				this.$router.replace("/nav")
+				let v = this
+				v.creating = true
+				api.post("/bots", {
+					id:v.id,
+					password:v.password
+				}).then(response => {
+					v.creating = false
+					v.username = ""
+					v.password = ""
+					v.$notification.success({
+						message: '操作成功',
+						description: '成功创建了一个bot!',
+					})
+				}).catch(err => {
+					v.creating = false
+					v.$notification.error({
+						message: '创建失败！',
+						description: "",
+					})
+				})
 			},
-			protocolChange() {
-
-			}
 		},
 		components: {
-			UserOutlined,
-			KeyOutlined,
-			SmileOutlined
+			InputAccount,
+			InputPassword,
+			SelectProtocols
 		},
 	};
 </script>
