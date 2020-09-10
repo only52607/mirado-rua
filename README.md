@@ -4,7 +4,7 @@ typora-root-url: ./
 
 # mirado-rua
 
-基于vue3.0与ant-design-vue的bot管理后端，目前已适配[lua-mirai](https://github.com/only52607/lua-mirai)，项目仍在开发阶段。<br />
+基于vue3.0与ant-design-vue的bot管理后端，项目仍在开发阶段，目前已适配[lua-mirai](https://github.com/only52607/lua-mirai)。<br />
 
 
 
