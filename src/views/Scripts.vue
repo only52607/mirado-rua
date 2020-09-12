@@ -2,9 +2,9 @@
 	<a-page-header title="脚本" sub-title="Script" backIcon=false>
 		<a-tabs v-model:activeKey="activeTab">
 			<a-tab-pane key="0" tab="正在运行的脚本" force-render>
-				<a-space class="float-left margin-bottom">
-					<ButtonAddFile class="float-left index-top" @click="activeTab='1'" text="从已上传文件添加" />
-					<ButtonRefresh class="float-left index-top" @click="fetchScripts" text="刷新" />
+				<a-space class="margin-bottom">
+					<ButtonAddFile @click="activeTab='1'" text="从已上传文件添加" />
+					<ButtonRefresh @click="fetchScripts" text="刷新" />
 				</a-space>
 
 				<ScriptInfoTable :loading="loadingScripts" :data-source="scripts" @edit="editRunningScript" @reload="reloadRunningScript"
@@ -12,12 +12,12 @@
 			</a-tab-pane>
 
 			<a-tab-pane key="1" tab="已上传文件" force-render>
-				<a-space class="float-left margin-bottom">
-					<a-upload name="file" :multiple="false" :action="uploadAction" class="float-left">
-						<ButtonUpload class="index-top" text="上传文件" />
+				<a-space class="margin-bottom">
+					<a-upload :headers="uploadHeaders" showUploadList="false" name="file" :multiple="false" :action="uploadAction" @change="uploadFileStatusChange">
+						<ButtonUpload :loading="uploadingFile" text="上传文件" />
 					</a-upload>
-					<ButtonAddFile class="float-left index-top" @click="showCreateFile=true" text="创建空文件" />
-					<ButtonRefresh class="float-left index-top" @click="fetchFiles" text="刷新" />
+					<ButtonAddFile @click="showCreateFile=true" text="创建空文件" />
+					<ButtonRefresh @click="fetchFiles" text="刷新" />
 				</a-space>
 				<InputModal title="创建文件" before="文件名" v-model:visible="showCreateFile" @finish="createFile" />
 				<FileInfoTable :loading="loadingFiles" :data-source="files" @edit="editFile" @load="loadFile" @download="downloadFile"
@@ -62,10 +62,42 @@
 				loadingFiles: false,
 				uploadAction: "",
 				activeTab: "0",
-				showCreateFile: false
+				showCreateFile: false,
+				uploadingFile: false,
+				uploadHeaders:{}
 			};
 		},
 		methods: {
+			fetchFiles() {
+				let v = this
+				v.loadingFiles = true
+				api.get("/files").then(response => {
+					v.files.splice(0)
+					response.data.forEach((item,index)=>{
+						item.key = index
+						v.files.push(item)
+					})
+					v.loadingFiles = false
+				}).catch(err => {
+					this.$message.error("加载失败！" + err)
+					v.loadingFiles = false
+				})
+			},
+			fetchScripts() {
+				let v = this
+				v.loadingScripts = true
+				api.get("/scripts").then(response => {
+					v.scripts.splice(0)
+					response.data.forEach((item,index)=>{
+						item.key = index
+						v.scripts.push(item)
+					})
+					v.loadingScripts = false
+				}).catch(err => {
+					this.$message.error("加载失败！" + err)
+					v.loadingScripts = false
+				})
+			},
 			removeRunningScript(index) {
 				api.delete("/scripts/" + index).then(response => {
 					this.$message.success("删除成功！")
@@ -83,7 +115,13 @@
 				})
 			},
 			reloadRunningScript(index) {
-				//TODO
+				api.get("/scripts/" + index + "/reload").then(response => {
+					this.$message.success("重载成功！")
+					this.fetchScripts()
+				}).catch(err => {
+
+					this.$message.error("重载失败！")
+				})
 			},
 			createFile(name) {
 				api.put("/files/" + name + "/raw", "").then(response => {
@@ -140,30 +178,6 @@
 					Downloader.downloadText(response.data, filename)
 				})
 			},
-			fetchFiles() {
-				let v = this
-				v.loadingFiles = true
-				api.get("/files").then(response => {
-					v.files.splice(0)
-					v.files = response.data
-					v.loadingFiles = false
-				}).catch(err => {
-					this.$message.error("加载失败！" + err)
-					v.loadingFiles = false
-				})
-			},
-			fetchScripts() {
-				let v = this
-				v.loadingScripts = true
-				api.get("/scripts").then(response => {
-					v.scripts.splice(0)
-					v.scripts = response.data
-					v.loadingScripts = false
-				}).catch(err => {
-					this.$message.error("加载失败！" + err)
-					v.loadingScripts = false
-				})
-			},
 			onFileNameChange(index, key, name) {
 				let originName = this.files[index].name
 				api.put("/files/" + originName + "/name", {
@@ -175,10 +189,24 @@
 					this.$message.error("重命名失败")
 					this.files[index].name = originName
 				})
+			},
+			uploadFileStatusChange(info) {
+				if (info.file.status == 'uploading') {
+					this.uploadingFile = true
+					return
+				}
+				this.uploadingFile = false
+				if (info.file.status === 'done') {
+					this.$message.success(`${info.file.name} 上传成功`);
+				} else if (info.file.status === 'error') {
+					this.$message.error(`${info.file.name} 上传失败`);
+				}
+				this.fetchFiles()
 			}
 		},
 		mounted() {
 			this.uploadAction = api.baseURL + '/files'
+			this.uploadHeaders = {'Authorization':localStorage.authorization}
 			this.fetchFiles()
 			this.fetchScripts()
 		}
@@ -186,15 +214,16 @@
 </script>
 
 <style>
-	.float-left {
+/* 	.float-left {
 		float: left;
-	}
-
-	.margin-bottom {
-		margin-bottom: 10px;
 	}
 
 	.index-top {
 		z-index: 10;
+	} */
+	
+	.margin-bottom {
+		margin-bottom: 10px;
 	}
+
 </style>
