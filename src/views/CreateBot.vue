@@ -22,7 +22,7 @@
 	import InputAccount from '@/components/inputs/InputAccount.vue'
 	import InputPassword from '@/components/inputs/InputPassword.vue'
 	import SelectProtocols from '@/components/selects/SelectProtocols.vue'
-	
+
 	export default {
 		name: "CreateBot",
 		data() {
@@ -38,8 +38,10 @@
 				let v = this
 				v.creating = true
 				api.post("/bots", {
-					id:v.id,
-					password:v.password
+					id: v.id,
+					password: v.password
+				}, {
+					timeout: 30000
 				}).then(response => {
 					v.creating = false
 					v.username = ""
@@ -52,7 +54,7 @@
 					v.creating = false
 					v.$notification.error({
 						message: '创建失败！',
-						description: "",
+						description: JSON.stringify(err),
 					})
 				})
 			},

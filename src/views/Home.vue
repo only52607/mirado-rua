@@ -2,6 +2,10 @@
 	<a-layout id="main">
 		<AffixHeader @more="topDrawervisible=!topDrawervisible" />
 		<a-layout>
+			<a-modal v-model:visible="captchaModelVisible" title="请输入验证码" @ok="handleCaptcha" @cancel="handleCaptcha">
+				<img :src="captchaSrc" />
+				<a-input v-model:value="captchaResult" />
+			</a-modal>
 
 			<AffixSider :offset-top=85 width="200">
 				<NavMenu v-model:selectedKeys="selectedNavKeys" />
@@ -30,9 +34,11 @@
 		bots,
 		updateBots
 	} from '@/utils/bots.js'
-	
-	import {logStore} from '@/utils/logStore.js'
-	
+
+	import {
+		logStore
+	} from '@/utils/logStore.js'
+
 	export default {
 		components: {
 			AffixHeader,
@@ -48,21 +54,41 @@
 			this.selectedNavKeys.push(this.$route.fullPath)
 			updateBots()
 			let eb = new EventBus("http://localhost/eb")
-			eb.onopen = ()=>{
+			let v = this
+			eb.onopen = () => {
 				eb.registerHandler("log", function(err, msg) {
 					logStore.pushLog(msg.body)
+				})
+				eb.registerHandler("loginSolver", function(err, msg) {
+					let jsonBody = msg.body
+					let type = jsonBody.type
+					v.captchaModelVisible = true
+					if (type == "PicCaptcha") {
+						v.captchaSrc = "data:image/bmp;base64," + jsonBody.data
+					}
 				})
 			}
 		},
 		data() {
 			return {
 				topDrawervisible: false,
-				selectedNavKeys: []
+				selectedNavKeys: [],
+				captchaSrc: "",
+				captchaResult: "",
+				captchaModelVisible:false
 			}
 		},
 		watch: {
 			selectedNavKeys(keys) {
 				this.$router.replace(keys[0])
+			}
+		},
+		methods: {
+			handleCaptcha() {
+				api.post("/loginSolver", {
+					result: this.captchaResult
+				})
+				this.captchaModelVisible = false
 			}
 		}
 	}

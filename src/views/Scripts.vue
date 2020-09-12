@@ -2,12 +2,12 @@
 	<a-page-header title="脚本" sub-title="Script" backIcon=false>
 		<a-tabs v-model:activeKey="activeTab">
 			<a-tab-pane key="0" tab="正在运行的脚本" force-render>
-				<!-- <a-space class="margin-bottom"> -->
+				<a-space class="margin-bottom">
 				<!-- <a-row type="flex" justify="start"> -->
 					 <!-- <a-col :span="6"> --> <ButtonAddFile @click="activeTab='1'" text="从已上传文件添加" /> <!-- </a-col> -->
 					<!-- <a-col :span="3"> --> <ButtonRefresh @click="fetchScripts" text="刷新" /><!-- </a-col> -->
 				<!-- </a-row> -->
-				<!-- </a-space> -->
+				</a-space>
 
 				<ScriptInfoTable :loading="loadingScripts" :data-source="scripts" @edit="editRunningScript" @reload="reloadRunningScript"
 				 @download="downloadRunningScript" @remove="removeRunningScript" />
