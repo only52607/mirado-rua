@@ -1,5 +1,5 @@
 <template>
-	<a-table :columns="columns" split="false">
+	<a-table :columns="columns" split="false" :row-key="record => record.file">
 		<template v-slot:version="{ text }">
 			<span>
 				<a-tag :key="text" color="green">

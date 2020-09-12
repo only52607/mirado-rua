@@ -2,10 +2,12 @@
 	<a-page-header title="脚本" sub-title="Script" backIcon=false>
 		<a-tabs v-model:activeKey="activeTab">
 			<a-tab-pane key="0" tab="正在运行的脚本" force-render>
-				<a-space class="margin-bottom">
-					<ButtonAddFile @click="activeTab='1'" text="从已上传文件添加" />
-					<ButtonRefresh @click="fetchScripts" text="刷新" />
-				</a-space>
+				<!-- <a-space class="margin-bottom"> -->
+				<!-- <a-row type="flex" justify="start"> -->
+					 <!-- <a-col :span="6"> --> <ButtonAddFile @click="activeTab='1'" text="从已上传文件添加" /> <!-- </a-col> -->
+					<!-- <a-col :span="3"> --> <ButtonRefresh @click="fetchScripts" text="刷新" /><!-- </a-col> -->
+				<!-- </a-row> -->
+				<!-- </a-space> -->
 
 				<ScriptInfoTable :loading="loadingScripts" :data-source="scripts" @edit="editRunningScript" @reload="reloadRunningScript"
 				 @download="downloadRunningScript" @remove="removeRunningScript" />
@@ -72,11 +74,7 @@
 				let v = this
 				v.loadingFiles = true
 				api.get("/files").then(response => {
-					v.files.splice(0)
-					response.data.forEach((item,index)=>{
-						item.key = index
-						v.files.push(item)
-					})
+					v.files = response.data
 					v.loadingFiles = false
 				}).catch(err => {
 					this.$message.error("加载失败！" + err)
@@ -87,11 +85,7 @@
 				let v = this
 				v.loadingScripts = true
 				api.get("/scripts").then(response => {
-					v.scripts.splice(0)
-					response.data.forEach((item,index)=>{
-						item.key = index
-						v.scripts.push(item)
-					})
+					v.scripts = response.data
 					v.loadingScripts = false
 				}).catch(err => {
 					this.$message.error("加载失败！" + err)
@@ -119,7 +113,6 @@
 					this.$message.success("重载成功！")
 					this.fetchScripts()
 				}).catch(err => {
-
 					this.$message.error("重载失败！")
 				})
 			},
@@ -214,16 +207,7 @@
 </script>
 
 <style>
-/* 	.float-left {
-		float: left;
-	}
-
-	.index-top {
-		z-index: 10;
-	} */
-	
 	.margin-bottom {
 		margin-bottom: 10px;
 	}
-
 </style>

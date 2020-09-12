@@ -1,5 +1,5 @@
 <template>
-	<a-table :columns="columns" split="false">
+	<a-table :columns="columns" split="false" :row-key="record => record.name">
 		<template v-slot:action="{ text, record, index }">
 			<span>
 				<a-popconfirm title="确定删除此文件?" ok-text="确定" cancel-text="取消" @confirm="$emit('remove',index)">
