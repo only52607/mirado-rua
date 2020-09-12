@@ -3,10 +3,10 @@
 	<a-page-header title="控制台" sub-title="Console" backIcon=false>
 		<template v-slot:extra>
 			<a-space align="start">
-				<a-checkbox v-model:checked="showNetLog" @change="filterChange">
+				<a-checkbox v-model:checked="showNetLog" @change="updateLogs">
 					网络日志
 				</a-checkbox>
-				<a-checkbox v-model:checked="showBotLog" @change="filterChange">
+				<a-checkbox v-model:checked="showBotLog" @change="updateLogs">
 					Bot日志
 				</a-checkbox>
 				<a-select v-model:value="botFilter" style="width: 120px">
@@ -25,7 +25,6 @@
 			<InputModal title="发送命令" before=">>" v-model:visible="showInputCommand" @finish="sendCommand" />
 		</template>
 		<ConsoleList :data-source="logs"></ConsoleList>
-
 	</a-page-header>
 
 </template>
@@ -70,19 +69,16 @@
 			}
 		},
 		methods: {
-			filterChange() {
-				this.updateLogs()
-			},
 			clearConsole() {
-				logStore.logs.splice(0)
+				logStore.clearLog()
 				this.logs.splice(0)
 			},
-			sendCommand(content) {
-				this.logs.unshift({
-					message: ">> " + content
-				})
-				this.showInputCommand = false
-			},
+			// sendCommand(content) {
+			// 	this.logs.unshift({
+			// 		message: ">> " + content
+			// 	})
+			// 	this.showInputCommand = false
+			// },
 			updateLogs() {
 				this.logs.splice(0)
 				logStore.register((log) => {

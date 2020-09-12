@@ -1,11 +1,13 @@
+let baseURL = 'http://localhost/api/v1'
+
 let axiosInstance = axios.create({
-	baseURL: 'http://localhost/api/v1',
+	baseURL,
 	timeout: 1000,
 	headers: {
 		'Content-Type': 'application/x-www-form-urlencoded'
 	}
 })
-
+axiosInstance.baseURL = baseURL
 axiosInstance.interceptors.request.use((config) => {
 	config.headers.Authorization = localStorage.authorization
 	return config;

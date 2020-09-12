@@ -10,7 +10,7 @@
 		
 		<template #expandedRowRender="{ record }">
 		      <p style="margin: 0">
-		        {{ record.description }}
+		        {{ record.usage }}
 		      </p>
 		</template>
 		
