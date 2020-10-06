@@ -1,31 +1,47 @@
 <template>
 	<a-page-header title="编辑" :sub-title="$route.params.name" @back="() => $router.go(-1)">
 		<template v-slot:extra>
-			<ButtonSave text="保存" @click="save" :loading="saving" />
+			<ButtonSave text="保存" @click="save" :loading="isLoading" />
 		</template>
-		<a-spin :spinning="loading">
-			<textarea ref="editor" id="codecontent" ></textarea>
+		<a-spin :spinning="isLoading">
+			<textarea ref="editor" id="code-content" ></textarea>
 		</a-spin>
 	</a-page-header>
 </template>
 
 <script>
+	import { getCurrentInstance,reactive,ref,watchEffect,computed } from 'vue'
 	import ButtonSave from '@/components/buttons/ButtonSave.vue'
-	var Base64 = require('js-base64').Base64
+	const Base64 = require('js-base64').Base64
 
 	export default {
-		data() {
-			return {
-				saving: false,
-				mirror: null,
-				loading: true
-			}
-		},
 		components: {
 			ButtonSave
 		},
-		mounted() {
-			let m = CodeMirror.fromTextArea(document.getElementById("codecontent"), {
+		setup(){
+			const {ctx} = getCurrentInstance()
+			const isSaving = ref(false)
+			const isLoading = ref(true)
+			const mirrorView = ref({})
+			async function save() {
+				isSaving.value = true
+				try{
+					await ctx.$api.put("/files/" + ctx.$route.params.name + "/raw", Base64.encode(mirrorView.getValue()))
+					ctx.$message.success("保存成功")
+				}catch (err) {
+					ctx.$message.error("保存失败：" + err.checkData())
+				}
+				isSaving.value = false
+			}
+			return {
+				isSaving,
+				isLoading,
+				mirrorView,
+				save
+			}
+		},
+		async onMounted() {
+			const mirror = CodeMirror.fromTextArea(document.getElementById("code-content"), {
 				lineNumbers: true,
 				indentWithTabs: true,
 				mode: "lua",
@@ -36,25 +52,11 @@
 				lineWrapping: true,
 				gutters: ['CodeMirror-linenumbers', 'CodeMirror-foldgutter', 'CodeMirror-lint-markers']
 			})
-			api.get("/files/" + this.$route.params.name + "/raw").then(response => {
-				this.code = Base64.decode(response.data)
-				m.setValue(this.code)
-				m.refresh()
-				this.loading = false
-			})
-			this.mirror = m
-		},
-		methods: {
-			save() {
-				this.saving = true
-				api.put("/files/" + this.$route.params.name + "/raw", Base64.encode(this.mirror.getValue())).then(response => {
-					this.$message.success("保存成功")
-					this.saving = false
-				}).catch(err => {
-					this.$message.error("保存失败")
-					this.saving = false
-				})
-			}
+			const response = await this.$api.get("/files/" + this.$route.params.name + "/raw")
+			mirror.setValue(Base64.decode(response.data))
+			mirror.refresh()
+			this.isLoading.value = false
+			this.mirrorView.value = mirror
 		}
 	}
 </script>

@@ -1,4 +1,5 @@
-let baseURL = 'http://localhost/api/v1'
+let serverUrl = 'http://localhost'
+let baseURL = serverUrl + '/api/v1'
 
 let axiosInstance = axios.create({
 	baseURL,
@@ -7,7 +8,10 @@ let axiosInstance = axios.create({
 		'Content-Type': 'application/x-www-form-urlencoded'
 	}
 })
+
 axiosInstance.baseURL = baseURL
+axiosInstance.serverUrl = serverUrl
+
 axiosInstance.interceptors.request.use((config) => {
 	config.headers.Authorization = localStorage.authorization
 	return config;

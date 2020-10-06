@@ -33,8 +33,6 @@
 		ControlOutlined
 	} from '@ant-design/icons-vue'
 	
-	import {bots,updateBots} from '@/utils/bots.js'
-	
 	export default{
 		components:{
 			CodeOutlined,
@@ -43,17 +41,10 @@
 			AppstoreOutlined,
 			ControlOutlined
 		},
-		data(){
-			return {
-				bots
-			}
-		},
-		mounted() {
-			// console.log(bots)
-			//console.log(this.bots)
+		props:{
+			"bots":Array
 		}
 	}
-	
 </script>
 
 <style>

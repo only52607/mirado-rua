@@ -1,5 +1,4 @@
-
-let Downloader = {
+export default {
 	downloadText(text,filename){
 		let blob = new Blob([text],{type:"text/plain;charset=utf-8"})
 		let url = window.URL.createObjectURL(blob)
@@ -12,5 +11,3 @@ let Downloader = {
 		window.URL.revokeObjectURL(url)
 	}
 }
-
-export {Downloader}

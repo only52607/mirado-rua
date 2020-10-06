@@ -42,11 +42,8 @@
 	import ButtonUpload from '@/components/buttons/ButtonUpload'
 	import ButtonAddFile from '@/components/buttons/ButtonAddFile'
 	import InputModal from '@/components/InputModal.vue'
-
-	import {
-		Downloader
-	} from '@/utils/downloader.js'
-
+	import Downloader from '@/utils/Downloader.js'
+	import { getCurrentInstance,reactive,ref,watchEffect,computed } from 'vue'
 	export default {
 		components: {
 			ScriptInfoTable,
@@ -56,149 +53,143 @@
 			ButtonAddFile,
 			InputModal
 		},
-		data() {
-			return {
-				scripts: [],
-				files: [],
-				loadingScripts: false,
-				loadingFiles: false,
-				uploadAction: "",
-				activeTab: "0",
-				showCreateFile: false,
-				uploadingFile: false,
-				uploadHeaders:{}
-			};
-		},
-		methods: {
-			fetchFiles() {
-				let v = this
-				v.loadingFiles = true
-				api.get("/files").then(response => {
-					v.files = response.data
-					v.loadingFiles = false
-				}).catch(err => {
-					this.$message.error("加载失败！" + err)
-					v.loadingFiles = false
-				})
-			},
-			fetchScripts() {
-				let v = this
-				v.loadingScripts = true
-				api.get("/scripts").then(response => {
-					v.scripts = response.data
-					v.loadingScripts = false
-				}).catch(err => {
-					this.$message.error("加载失败！" + err)
-					v.loadingScripts = false
-				})
-			},
-			removeRunningScript(index) {
-				api.delete("/scripts/" + index).then(response => {
-					this.$message.success("删除成功！")
-					this.fetchScripts()
-				}).catch(err => {
-					this.$message.error("删除失败！")
-				})
-			},
-			editRunningScript(index) {
-				this.$router.push({
+		setup(){
+			const {ctx} = getCurrentInstance()
+			const scripts = reactive([])
+			const files = reactive([])
+			const loadingScripts = ref(false)
+			const loadingFiles = ref(false)
+			const uploadAction = ref("")
+			const activeTab = ref("0")
+			const showCreateFile = ref(false)
+			const uploadingFile = ref(false)
+			const uploadHeaders = reactive({})
+			async function fetchFiles() {
+				loadingFiles.value = true
+				try{
+					files.value = await ctx.$api.get("/files").data
+				}catch(err){
+					ctx.$message.error("加载失败：" + err.checkData())
+				}
+				loadingFiles.value = false
+			}
+			async function fetchScripts() {
+				loadingScripts.value = true
+				try{
+					scripts.value = await ctx.$api.get("/scripts").data
+				}catch(err){
+					ctx.$message.error("加载失败：" + err.checkData())
+				}
+				loadingScripts.value = false
+			}
+			async function removeRunningScript(index) {
+				try{
+					await ctx.$api.delete("/scripts/" + index)
+					ctx.$message.success("删除成功！")
+					fetchScripts()
+				}catch(err){
+					this.$message.error("删除失败：" + err.checkData())
+				}
+			}
+			async function editRunningScript(index) {
+				ctx.$router.push({
 					name: "editor",
 					params: {
-						name: this.scripts[index].file
+						name: scripts[index].file
 					}
 				})
-			},
-			reloadRunningScript(index) {
-				api.get("/scripts/" + index + "/reload").then(response => {
-					this.$message.success("重载成功！")
-					this.fetchScripts()
-				}).catch(err => {
-					this.$message.error("重载失败！")
-				})
-			},
-			createFile(name) {
-				api.put("/files/" + name + "/raw", "").then(response => {
-					this.$message.success("创建成功")
-					this.fetchFiles()
-					this.showCreateFile = false
-				}).catch(err => {
-					this.$message.error("创建失败")
-					this.showCreateFile = false
-				})
-			},
-			downloadRunningScript(index) {
-				let filename = this.scripts[index].file
-				api.get("/files/" + filename + "/file").then(response => {
-					Downloader.downloadText(response.data, filename)
-				})
-			},
-			removeFile(index) {
-				let name = this.files[index].name
-				api.delete("/files/" + name).then(response => {
-					this.$message.success("删除成功！")
-					this.fetchFiles()
-				}).catch(err => {
-					this.$message.error("删除失败！")
-				})
-			},
-			editFile(index) {
-				this.$router.push({
+			}
+			async function reloadRunningScript(index) {
+				try{
+					await ctx.$api.get("/scripts/" + index + "/reload")
+					ctx.$message.success("重载成功！")
+					fetchScripts()
+				}catch(err){
+					ctx.$message.error("重载失败：" + err.checkData())
+				}
+			}
+			async function createFile(name) {
+				try{
+					await ctx.$api.put("/files/" + name + "/raw", "")
+					ctx.$message.success("创建成功！")
+					fetchFiles()
+				}catch(err){
+					ctx.$message.error("创建失败：" + err.checkData())
+				}
+				showCreateFile.value = false
+			}
+			async function downloadRunningScript(index) {
+				const response = await ctx.$api.get("/files/" + scripts[index].file + "/file")
+				Downloader.downloadText(response.data, scripts[index].file)
+			}
+			async function removeFile(index) {
+				 try{
+					await ctx.$api.delete("/files/" + files[index].name)
+					ctx.$message.success("删除成功！")
+					fetchFiles()
+				}catch(err){
+					ctx.$message.error("删除失败：" + err.checkData())
+				}
+			}
+			async function editFile(index) {
+				ctx.$router.push({
 					name: "editor",
 					params: {
 						name: this.files[index].name
 					}
 				})
-			},
-			loadFile(index) {
-				this.files[index].loading = true
-				api.post("/scripts", this.files[index]).then(response => {
-					this.$notification.success({
+			}
+			async function loadFile(index) {
+				files[index].loading = true
+				try{
+					await ctx.$api.post("/scripts", files[index])
+					ctx.$notification.success({
 						message: '载入成功',
 						description: '成功加载一个脚本',
 					})
-					this.fetchScripts()
-				}).catch(err => {
-					this.$error({
-						title: '加载脚本失败',
-						content: err.response.data.error,
-					})
-				})
-				this.files[index].loading = false
-			},
-			downloadFile(index) {
-				let filename = this.files[index].name
-				api.get("/files/" + filename + "/file").then(response => {
-					Downloader.downloadText(response.data, filename)
-				})
-			},
-			onFileNameChange(index, key, name) {
-				let originName = this.files[index].name
-				api.put("/files/" + originName + "/name", {
-					name
-				}).then(response => {
-					this.$message.success("重命名成功")
-					this.fetchFiles()
-				}).catch(err => {
-					this.$message.error("重命名失败")
-					this.files[index].name = originName
-				})
-			},
-			uploadFileStatusChange(info) {
+					fetchScripts()
+				}catch(err){
+					ctx.$message.error("加载脚本失败：" + err.checkData())
+				}
+				files[index].loading = false
+			}
+			async function downloadFile(index) {
+				const response = await ctx.$api.get("/files/" + files[index].name + "/file")
+				Downloader.downloadText(response.data, files[index].name)
+			}
+			async function onFileNameChange(index, key, name) {
+				const originName = this.files[index].name
+				try{
+					const response = ctx.$api.put("/files/" + originName + "/name", {name})
+					ctx.$message.success("重命名成功")
+					fetchFiles()
+				}catch(err){
+					ctx.$message.error("重命名失败：" + err.checkData())
+					files[index].name = originName
+				}
+			}
+			async function uploadFileStatusChange(info) {
 				if (info.file.status == 'uploading') {
-					this.uploadingFile = true
+					uploadingFile.value = true
 					return
 				}
-				this.uploadingFile = false
+				uploadingFile.value = false
 				if (info.file.status === 'done') {
-					this.$message.success(`${info.file.name} 上传成功`);
+					ctx.$message.success(`${info.file.name} 上传成功`);
 				} else if (info.file.status === 'error') {
-					this.$message.error(`${info.file.name} 上传失败`);
+					ctx.$message.error(`${info.file.name} 上传失败`);
 				}
-				this.fetchFiles()
+				fetchFiles()
+			}
+			return {
+				scripts,files,loadingScripts,loadingFiles,uploadAction,activeTab,showCreateFile,
+				uploadingFile,uploadHeaders,fetchFiles,fetchScripts,removeRunningScript,editRunningScript,
+				reloadRunningScript,createFile,downloadRunningScript,removeFile,editFile,loadFile,
+				downloadFile,onFileNameChange,uploadFileStatusChange
 			}
 		},
-		mounted() {
-			this.uploadAction = api.baseURL + '/files'
+		onMounted() {
+			this.uploadAction = this.$api.baseURL + '/files'
 			this.uploadHeaders = {'Authorization':localStorage.authorization}
 			this.fetchFiles()
 			this.fetchScripts()

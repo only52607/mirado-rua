@@ -13,7 +13,7 @@
 					<a-select-option value="all">
 						全部
 					</a-select-option>
-					<template v-for="bot in _bots" key="bs">
+					<template v-for="bot in bots" key="bs">
 						<a-select-option :value="bot.id">
 							{{bot.nick}}
 						</a-select-option>
@@ -32,75 +32,49 @@
 <script>
 	import ConsoleList from '@/components/ConsoleList.vue'
 	import InputModal from '@/components/InputModal.vue'
-
 	import ButtonDelete from '@/components/buttons/ButtonDelete.vue'
 	import ButtonSend from '@/components/buttons/ButtonSend.vue'
-
-	import {
-		bots,
-		updateBots
-	} from '@/utils/bots.js'
-
-	import {
-		logStore
-	} from '@/utils/logStore.js'
-
+	
+	import { getCurrentInstance,reactive,ref,watchEffect,computed } from 'vue'
+	
 	export default {
-		data() {
-			return {
-				showNetLog: true,
-				showBotLog: true,
-				botFilter: "all",
-				showInputCommand: false,
-				command: "echo 'Hello'",
-				logs: [],
-				_bots: []
-			};
-		},
 		components: {
 			ConsoleList,
 			InputModal,
 			ButtonDelete,
 			ButtonSend
 		},
-		watch: {
-			botFilter() {
-				this.updateLogs()
-			}
-		},
-		methods: {
-			clearConsole() {
-				logStore.clearLog()
-				this.logs.splice(0)
-			},
-			// sendCommand(content) {
-			// 	this.logs.unshift({
-			// 		message: ">> " + content
-			// 	})
-			// 	this.showInputCommand = false
-			// },
-			updateLogs() {
-				this.logs.splice(0)
-				logStore.register((log) => {
-						if (this.botFilter != "all" && this.botFilter != log.from) return false
-						if (log.type == "net" && !this.showNetLog) return false
-						if (log.type == "bot" && !this.showBotLog) return false
-						return true
-					},(log) => {
-						this.logs.push(log)
-					})
-			}
-		},
-		mounted() {
-			updateBots().then(b => {
-				this._bots.splice(0)
-				b.forEach((item, index) => {
-					this._bots.push(item)
+		setup(){
+			const {ctx} = getCurrentInstance()
+			const showNetLog = ref(true)
+			const showBotLog = ref(true)
+			const botFilter = ref("all")
+			const showInputCommand = ref(false)
+			const command = ref("echo 'Hello'")
+			const injectLogs = ctx.$logStore.injectLogs()
+			const logs = computed(()=>{
+				return injectLogs.filter(log=>{
+					if (botFilter != "all" && botFilter != log.from) return false
+					if (log.type == "net" && !showNetLog) return false
+					if (log.type == "bot" && !showBotLog) return false
+					return true
 				})
 			})
-			this.updateLogs()
-		},
-
+			const bots = ctx.$botStore.injectBots()
+			function clearConsole() {
+				ctx.$logStore.clearLogs()
+			}
+			return {
+				showNetLog,
+				showBotLog,
+				botFilter,
+				showInputCommand,
+				command,
+				logs,
+				bots,
+				clearConsole
+			}
+		}
 	}
 </script>
 

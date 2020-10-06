@@ -1,7 +1,7 @@
 <template>
 	<a-page-header :title="bot.nick" :sub-title="bot.id" backIcon=false :avatar="{src:bot.avatarUrl}">
 		<template v-slot:extra>
-			<a-button type="danger" @click="unlogin" :loading = "unlogining">
+			<a-button type="danger" @click="unlogin" :loading = "isUnlogining">
 				退出登录
 			</a-button>
 		</template>
@@ -9,55 +9,46 @@
 </template>
 
 <script>
-	import {bots,updateBots} from '@/utils/bots.js'
-	
+	import { getCurrentInstance,reactive,ref,watchEffect,computed } from 'vue'
 	export default {
-		data() {
+		setup(){
+			const {ctx} = getCurrentInstance()
+			const bots = ctx.$botStore.injectBots()
+			const bot = computed(()=>{
+				const filterBots = bots.filter(item=>{
+					return item.id == id
+				})
+				return filterBots[0]
+			})
+			const botId = ref(0)
+			const isUnlogining = ref(false)
+			async function unlogin(){
+				isUnlogining.value = true
+				try{
+					await ctx.$api.delete("/bots/" + botId.value)
+					ctx.$message.success('已退出')
+					ctx.$botStore.updateBots()
+					ctx.$router.replace("/console")
+				}catch(err){
+					this.$message.error('退出失败！' + err.checkData())
+				}
+				unlogining.value = false
+			}
 			return {
-				bot:{},
-				unlogining:false
+				bot,
+				botId,
+				isUnlogining,
+				unlogin
 			}
 		},
-		mounted() {
-			if(bots.length == 0){
-				updateBots().then(bots=>{
-					this.bot = this.fetchBot(this.$route.params.id)
-				})
-			}else{
-				this.bot = this.fetchBot(this.$route.params.id)
-			}
+		onMounted() {
+			this.botId.value = this.$route.params.id
 		},
 		watch:{
 			$route(to, from) {
-				this.bot = this.fetchBot(to.params.id)
+				this.botId.value = to.params.id
 			}
 		},
-		methods:{
-			unlogin(){
-				this.unlogining = true
-				api.delete("/bots/"+this.bot.id).then(response=>{
-					this.$message.success('已退出')
-					updateBots()
-					this.$router.replace("/console")
-				}).catch(err=>{
-					this.$message.error('退出失败！')
-					this.unlogining = false
-				})
-			},
-			fetchBot(id) {
-				let b = bots.filter(item=>{
-					return item.id == id
-				})
-				console.log(b)
-				if (b.length == 0){
-					this.$message.error('不存在此bot！')
-					this.$router.replace("/console")
-					return {id: 0,nick: "",avatarUrl: "",protocol: ""}
-				}else{
-					return b[0]
-				}
-			}
-		}
 	}
 </script>
 

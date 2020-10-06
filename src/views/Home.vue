@@ -8,11 +8,11 @@
 			</a-modal>
 
 			<AffixSider :offset-top=85 width="200">
-				<NavMenu v-model:selectedKeys="selectedNavKeys" />
+				<NavMenu v-model:selectedKeys="selectedNavKeys" @click="$router.replace(selectedNavKeys[0])" :bots="bots" />
 			</AffixSider>
 
-			<TopDrawer v-model:visible="topDrawervisible" title="菜单">
-				<NavMenu v-model:selectedKeys="selectedNavKeys" />
+			<TopDrawer v-model:visible="isTopDrawerVisible" title="菜单">
+				<NavMenu v-model:selectedKeys="selectedNavKeys" @click="$router.replace(selectedNavKeys[0])" :bots="bots" />
 			</TopDrawer>
 
 			<a-layout>
@@ -30,15 +30,9 @@
 	import AffixSider from '@/components/AffixSider.vue'
 	import NavMenu from '@/components/NavMenu.vue'
 	import TopDrawer from '@/components/TopDrawer.vue'
-	import {
-		bots,
-		updateBots
-	} from '@/utils/bots.js'
 
-	import {
-		logStore
-	} from '@/utils/logStore.js'
-
+	import { getCurrentInstance,reactive,ref,watchEffect,computed,onMounted } from 'vue'
+	
 	export default {
 		components: {
 			AffixHeader,
@@ -46,51 +40,55 @@
 			AffixSider,
 			TopDrawer
 		},
-		mounted() {
-			api.get('/auth').catch(err => {
-				this.$router.replace("/auth")
-				return
+		setup(){
+			const {ctx} = getCurrentInstance()
+			const isTopDrawerVisible = ref(false)
+			const selectedNavKeys = reactive([])
+			const captchaSrc = ref("")
+			const captchaResult = ref("")
+			const captchaModelVisible = ref(false)
+			const bots = ctx.$botStore.injectBots()
+			async function handleCaptcha() {
+				ctx.$api.post("/bots/"+ ctx.$botStore.value +"/captchaResult", {result: captchaResult})
+				captchaModelVisible.value = false
+			}
+			onMounted(async ()=>{
+				try{
+					await ctx.$api.get('/auth')
+				}catch(err){
+					if(err.response) ctx.$router.replace("/auth")
+					else ctx.$message.error('连接服务器失败！', 2)
+					return
+				}
+				ctx.selectedNavKeys.push(ctx.$route.fullPath)
+				eventBus.onopen = () => {
+					eventBus.registerHandler("sockJs.bot.log", (err, msg) => {
+						ctx.$logStore.pushLog(msg.body)
+					})
+					eventBus.registerHandler("sockJs.bot.loginSolver", (err, msg) => {
+						captchaModelVisible.value = true
+						if (msg.body.type == "PicCaptcha") {
+							captchaSrc.value = "data:image/bmp;base64," + msg.body.data
+						}
+					})
+				}
+				eventBus.onerror = (err) => {
+					ctx.$message.error("连接SockJs服务端失败：" + err)
+				}
+				ctx.$botStore.updateBots()
 			})
-			this.selectedNavKeys.push(this.$route.fullPath)
-			updateBots()
-			let eb = new EventBus("http://localhost/eb")
-			let v = this
-			eb.onopen = () => {
-				eb.registerHandler("log", function(err, msg) {
-					logStore.pushLog(msg.body)
-				})
-				eb.registerHandler("loginSolver", function(err, msg) {
-					let jsonBody = msg.body
-					let type = jsonBody.type
-					v.captchaModelVisible = true
-					if (type == "PicCaptcha") {
-						v.captchaSrc = "data:image/bmp;base64," + jsonBody.data
-					}
-				})
-			}
-		},
-		data() {
+			
 			return {
-				topDrawervisible: false,
-				selectedNavKeys: [],
-				captchaSrc: "",
-				captchaResult: "",
-				captchaModelVisible:false
-			}
-		},
-		watch: {
-			selectedNavKeys(keys) {
-				this.$router.replace(keys[0])
-			}
-		},
-		methods: {
-			handleCaptcha() {
-				api.post("/loginSolver", {
-					result: this.captchaResult
-				})
-				this.captchaModelVisible = false
+				isTopDrawerVisible,
+				selectedNavKeys,
+				captchaSrc,
+				captchaResult,
+				captchaModelVisible,
+				handleCaptcha,
+				bots
 			}
 		}
+		
 	}
 </script>
 

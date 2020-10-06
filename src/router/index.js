@@ -4,45 +4,44 @@ import {
 } from 'vue-router'
 
 const routes = [{
-		path: '/',
-		name: 'home',
-		component: () => import('../views/Home.vue'),
-		beforeEnter: (to, from, next) => {
-			next()
-		},
-		children: [
-			{
-				path: 'console',
-				name: 'console',
-				component: () => import('../views/Console.vue'),
-			},
-			{
-				path: 'bots/:id',
-				name: 'bots',
-				component: () => import('../views/Bot.vue'),
-			},
-			{
-				path: 'newbot',
-				name: 'newbot',
-				component: () => import('../views/CreateBot.vue'),
-			},
-			{
-				path: 'scripts',
-				name: 'scripts',
-				component: () => import('../views/Scripts.vue'),
-			},
-			{
-				path: 'editor/:name',
-				name: 'editor',
-				component: () => import('../views/FileEditor.vue'),
-			},
-			{
-				path: 'server',
-				name: 'server',
-				component: () => import('../views/Server.vue'),
-			},
-		]
+	path: '/',
+	name: 'home',
+	component: () => import('../views/Home.vue'),
+	beforeEnter: (to, from, next) => {
+		next()
 	},
+	children: [
+		{
+			path: 'console',
+			name: 'console',
+			component: () => import('../views/Console.vue'),
+		},
+		{
+			path: 'bots/:id',
+			name: 'bots',
+			component: () => import('../views/Bot.vue'),
+		},
+		{
+			path: 'newbot',
+			name: 'newbot',
+			component: () => import('../views/CreateBot.vue'),
+		},
+		{
+			path: 'scripts',
+			name: 'scripts',
+			component: () => import('../views/Scripts.vue'),
+		},
+		{
+			path: 'editor/:name',
+			name: 'editor',
+			component: () => import('../views/FileEditor.vue'),
+		},
+		{
+			path: 'server',
+			name: 'server',
+			component: () => import('../views/Server.vue'),
+		},
+	]},
 	{
 		path: '/auth',
 		name: "auth",
