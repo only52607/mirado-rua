@@ -1,5 +1,5 @@
 <template>
-	<a-drawer placement="top" closable="true" :get-container="false">
+	<a-drawer placement="top" :closable="true" :get-container="false">
 		<slot></slot>
 	</a-drawer>
 </template>

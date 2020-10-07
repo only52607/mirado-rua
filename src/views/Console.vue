@@ -3,10 +3,10 @@
 	<a-page-header title="控制台" sub-title="Console" backIcon=false>
 		<template v-slot:extra>
 			<a-space align="start">
-				<a-checkbox v-model:checked="showNetLog" @change="updateLogs">
+				<a-checkbox v-model:checked="showNetLog">
 					网络日志
 				</a-checkbox>
-				<a-checkbox v-model:checked="showBotLog" @change="updateLogs">
+				<a-checkbox v-model:checked="showBotLog"><!-- @change="updateLogs" -->
 					Bot日志
 				</a-checkbox>
 				<a-select v-model:value="botFilter" style="width: 120px">
@@ -19,10 +19,10 @@
 						</a-select-option>
 					</template>
 				</a-select>
-				<ButtonDelete @click="clearConsole" text="清空日志" />
+				<ButtonDelete @click="$logStore.clearLogs()" text="清空日志" />
 				<!-- <ButtonSend type="primary"  @click="showInputCommand=true" text="发送命令" /> -->
 			</a-space>
-			<InputModal title="发送命令" before=">>" v-model:visible="showInputCommand" @finish="sendCommand" />
+			<!-- <InputModal title="发送命令" before=">>" v-model:visible="showInputCommand" @finish="sendCommand" /> -->
 		</template>
 		<ConsoleList :data-source="logs"></ConsoleList>
 	</a-page-header>
@@ -49,30 +49,21 @@
 			const showNetLog = ref(true)
 			const showBotLog = ref(true)
 			const botFilter = ref("all")
-			const showInputCommand = ref(false)
-			const command = ref("echo 'Hello'")
-			const injectLogs = ctx.$logStore.injectLogs()
+			const allLogs = ctx.$logStore.logs
 			const logs = computed(()=>{
-				return injectLogs.filter(log=>{
+				return allLogs.filter(log=>{
 					if (botFilter != "all" && botFilter != log.from) return false
 					if (log.type == "net" && !showNetLog) return false
 					if (log.type == "bot" && !showBotLog) return false
 					return true
 				})
 			})
-			const bots = ctx.$botStore.injectBots()
-			function clearConsole() {
-				ctx.$logStore.clearLogs()
-			}
 			return {
 				showNetLog,
 				showBotLog,
 				botFilter,
-				showInputCommand,
-				command,
 				logs,
-				bots,
-				clearConsole
+				bots:ctx.$botStore.bots
 			}
 		}
 	}

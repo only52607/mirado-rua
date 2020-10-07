@@ -1,21 +1,19 @@
- import {reactive,ref,inject} from 'vue'
- const botsSymbol = Symbol('bots')
- async function getBots(){
-	 let result = await api.get("/bots")
-	 return result
- }
- async function updateBots(){
-	 let bots = inject(botsSymbol)
-	 bots.value = await getBots()
- }
-function injectBots(){
-	return inject(botsSymbol)
-}
+import {
+	reactive,
+	ref,
+} from 'vue'
+import api from "@/utils/Api.js"
+
+const bots = ref([])
 const recentBotId = ref(0)
+
+async function updateBots() {
+	let response = await api.get("/bots")
+	bots.value = response.data
+}
+
 export default {
-	botsSymbol,
-	getBots,
+	bots,
 	updateBots,
-	injectBots,
 	recentBotId
 }

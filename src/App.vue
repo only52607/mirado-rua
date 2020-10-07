@@ -4,6 +4,22 @@
   </div>
 </template>
 
+<script>
+import { getCurrentInstance,reactive,ref,watchEffect,computed,onMounted } from 'vue'
+export default {
+	setup(){
+		const {ctx} = getCurrentInstance()
+		ctx.$eventBus.onerror = (err) => {
+			ctx.$message.error("SockJs服务端发生异常：" + err)
+		}
+		ctx.$eventBus.onclose = () => {
+			ctx.$message.error("与SockJs服务端断开连接!")
+		}
+	}
+}
+</script>
+
+
 <style>
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;

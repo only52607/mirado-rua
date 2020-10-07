@@ -15,7 +15,7 @@
 
 			<a-tab-pane key="1" tab="已上传文件" force-render>
 				<a-space class="margin-bottom">
-					<a-upload :headers="uploadHeaders" showUploadList="false" name="file" :multiple="false" :action="uploadAction" @change="uploadFileStatusChange">
+					<a-upload :headers="uploadHeaders" :showUploadList="false" name="file" :multiple="false" :action="uploadAction" @change="uploadFileStatusChange">
 						<ButtonUpload :loading="uploadingFile" text="上传文件" />
 					</a-upload>
 					<ButtonAddFile @click="showCreateFile=true" text="创建空文件" />
@@ -43,7 +43,7 @@
 	import ButtonAddFile from '@/components/buttons/ButtonAddFile'
 	import InputModal from '@/components/InputModal.vue'
 	import Downloader from '@/utils/Downloader.js'
-	import { getCurrentInstance,reactive,ref,watchEffect,computed } from 'vue'
+	import { getCurrentInstance,reactive,ref,watchEffect,computed,onMounted } from 'vue'
 	export default {
 		components: {
 			ScriptInfoTable,
@@ -55,8 +55,8 @@
 		},
 		setup(){
 			const {ctx} = getCurrentInstance()
-			const scripts = reactive([])
-			const files = reactive([])
+			const scripts = ref([])
+			const files = ref([])
 			const loadingScripts = ref(false)
 			const loadingFiles = ref(false)
 			const uploadAction = ref("")
@@ -67,18 +67,20 @@
 			async function fetchFiles() {
 				loadingFiles.value = true
 				try{
-					files.value = await ctx.$api.get("/files").data
+					let result = await ctx.$api.get("/files")
+					files.value = result.data
 				}catch(err){
-					ctx.$message.error("加载失败：" + err.checkData())
+					ctx.$message.error("载入文件列表失败：" + err.checkData())
 				}
 				loadingFiles.value = false
 			}
 			async function fetchScripts() {
 				loadingScripts.value = true
 				try{
-					scripts.value = await ctx.$api.get("/scripts").data
+					let result = await ctx.$api.get("/scripts")
+					scripts.value = result.data
 				}catch(err){
-					ctx.$message.error("加载失败：" + err.checkData())
+					ctx.$message.error("载入脚本列表失败：" + err.checkData())
 				}
 				loadingScripts.value = false
 			}
@@ -181,6 +183,12 @@
 				}
 				fetchFiles()
 			}
+			onMounted(()=>{
+				uploadAction.value = ctx.$api.baseURL + '/files'
+				uploadHeaders.value = {'Authorization':localStorage.authorization}
+				fetchFiles()
+				fetchScripts()
+			})
 			return {
 				scripts,files,loadingScripts,loadingFiles,uploadAction,activeTab,showCreateFile,
 				uploadingFile,uploadHeaders,fetchFiles,fetchScripts,removeRunningScript,editRunningScript,
@@ -188,12 +196,6 @@
 				downloadFile,onFileNameChange,uploadFileStatusChange
 			}
 		},
-		onMounted() {
-			this.uploadAction = this.$api.baseURL + '/files'
-			this.uploadHeaders = {'Authorization':localStorage.authorization}
-			this.fetchFiles()
-			this.fetchScripts()
-		}
 	}
 </script>
 

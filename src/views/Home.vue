@@ -8,11 +8,11 @@
 			</a-modal>
 
 			<AffixSider :offset-top=85 width="200">
-				<NavMenu v-model:selectedKeys="selectedNavKeys" @click="$router.replace(selectedNavKeys[0])" :bots="bots" />
+				<NavMenu v-model:selectedKeys="selectedNavKeys" @select="$router.replace(selectedNavKeys[0])" :bots="bots" />
 			</AffixSider>
 
 			<TopDrawer v-model:visible="isTopDrawerVisible" title="菜单">
-				<NavMenu v-model:selectedKeys="selectedNavKeys" @click="$router.replace(selectedNavKeys[0])" :bots="bots" />
+				<NavMenu v-model:selectedKeys="selectedNavKeys" @select="$router.replace(selectedNavKeys[0])" :bots="bots" />
 			</TopDrawer>
 
 			<a-layout>
@@ -47,37 +47,33 @@
 			const captchaSrc = ref("")
 			const captchaResult = ref("")
 			const captchaModelVisible = ref(false)
-			const bots = ctx.$botStore.injectBots()
 			async function handleCaptcha() {
-				ctx.$api.post("/bots/"+ ctx.$botStore.value +"/captchaResult", {result: captchaResult})
+				ctx.$api.post("/bots/"+ ctx.$botStore.recentBotId.value +"/captchaResult", {result: captchaResult})
 				captchaModelVisible.value = false
 			}
 			onMounted(async ()=>{
+				selectedNavKeys.push(ctx.$router.currentRoute.value.fullPath)
 				try{
 					await ctx.$api.get('/auth')
 				}catch(err){
 					if(err.response) ctx.$router.replace("/auth")
 					else ctx.$message.error('连接服务器失败！', 2)
-					return
 				}
-				ctx.selectedNavKeys.push(ctx.$route.fullPath)
-				eventBus.onopen = () => {
-					eventBus.registerHandler("sockJs.bot.log", (err, msg) => {
+				ctx.$eventBus.onopen = () => {
+					ctx.$eventBus.registerHandler("sockJs.bot.log", (err, msg) => {
+						console.log("get log")
+						console.log(msg)
 						ctx.$logStore.pushLog(msg.body)
 					})
-					eventBus.registerHandler("sockJs.bot.loginSolver", (err, msg) => {
+					ctx.$eventBus.registerHandler("sockJs.bot.loginSolver", (err, msg) => {
 						captchaModelVisible.value = true
 						if (msg.body.type == "PicCaptcha") {
 							captchaSrc.value = "data:image/bmp;base64," + msg.body.data
 						}
 					})
 				}
-				eventBus.onerror = (err) => {
-					ctx.$message.error("连接SockJs服务端失败：" + err)
-				}
 				ctx.$botStore.updateBots()
 			})
-			
 			return {
 				isTopDrawerVisible,
 				selectedNavKeys,
@@ -85,10 +81,9 @@
 				captchaResult,
 				captchaModelVisible,
 				handleCaptcha,
-				bots
+				bots:ctx.$botStore.bots
 			}
 		}
-		
 	}
 </script>
 

@@ -9,19 +9,19 @@
 </template>
 
 <script>
-	import { getCurrentInstance,reactive,ref,watchEffect,computed } from 'vue'
+	import { getCurrentInstance,reactive,ref,watchEffect,computed,onMounted } from 'vue'
 	export default {
 		setup(){
 			const {ctx} = getCurrentInstance()
-			const bots = ctx.$botStore.injectBots()
-			const bot = computed(()=>{
-				const filterBots = bots.filter(item=>{
-					return item.id == id
-				})
-				return filterBots[0]
-			})
 			const botId = ref(0)
 			const isUnlogining = ref(false)
+			const bot = computed(()=>{
+				const filterBots = ctx.$botStore.bots.value.filter(item=>{
+					return item.id == botId.value
+				})
+				if (filterBots.length == 0) return {nick:"",id:0,avatarUrl:""}
+				return filterBots[0]
+			})
 			async function unlogin(){
 				isUnlogining.value = true
 				try{
@@ -34,15 +34,15 @@
 				}
 				unlogining.value = false
 			}
+			onMounted(()=>{
+				botId.value = ctx.$router.currentRoute.value.params.id
+			})
 			return {
 				bot,
 				botId,
 				isUnlogining,
 				unlogin
 			}
-		},
-		onMounted() {
-			this.botId.value = this.$route.params.id
 		},
 		watch:{
 			$route(to, from) {

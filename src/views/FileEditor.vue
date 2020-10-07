@@ -33,6 +33,24 @@
 				}
 				isSaving.value = false
 			}
+			onMounted(async ()=>{
+				const mirror = CodeMirror.fromTextArea(document.getElementById("code-content"), {
+					lineNumbers: true,
+					indentWithTabs: true,
+					mode: "lua",
+					matchBrackets: true,
+					autoRefresh: true,
+					theme:"neat",
+					foldGutter: true,
+					lineWrapping: true,
+					gutters: ['CodeMirror-linenumbers', 'CodeMirror-foldgutter', 'CodeMirror-lint-markers']
+				})
+				const response = await ctx.$api.get("/files/" + this.$router.currentRoute.value.params.name + "/raw")
+				mirror.setValue(Base64.decode(response.data))
+				mirror.refresh()
+				isLoading.value = false
+				mirrorView.value = mirror
+			})
 			return {
 				isSaving,
 				isLoading,
@@ -40,24 +58,6 @@
 				save
 			}
 		},
-		async onMounted() {
-			const mirror = CodeMirror.fromTextArea(document.getElementById("code-content"), {
-				lineNumbers: true,
-				indentWithTabs: true,
-				mode: "lua",
-				matchBrackets: true,
-				autoRefresh: true,
-				theme:"neat",
-				foldGutter: true,
-				lineWrapping: true,
-				gutters: ['CodeMirror-linenumbers', 'CodeMirror-foldgutter', 'CodeMirror-lint-markers']
-			})
-			const response = await this.$api.get("/files/" + this.$route.params.name + "/raw")
-			mirror.setValue(Base64.decode(response.data))
-			mirror.refresh()
-			this.isLoading.value = false
-			this.mirrorView.value = mirror
-		}
 	}
 </script>
 

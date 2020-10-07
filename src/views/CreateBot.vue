@@ -86,6 +86,7 @@
 				try {
 					await ctx.$api.post("/bots", formCreateBot, {timeout: 30000})
 					ctx.$message.success('成功创建Bot ' + formCreateBot.id, 2)
+					ctx.$botStore.updateBots()
 				} catch (err) {
 					ctx.$error({title: '创建失败',content: err.checkData()})
 				}
