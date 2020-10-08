@@ -1,7 +1,7 @@
 <template>
 	<a-page-header title="创建Bot" sub-title="Create Bot" backIcon=false>
 		<a-row type="flex" justify="center" align="top" :bordered="false" class="center">
-			<a-col :xs="24" :sm="22" :md="18" :lg="12" :xl="10">
+			<a-col :xs="24" :sm="22" :md="20" :lg="16" :xl="10">
 
 				<a-form :model="formCreateBot" :rules="rules" :label-col="{ span: 4 }" :wrapper-col="{ span: 14 }">
 					<a-form-item label="QQ账号:" name="id">

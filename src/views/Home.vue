@@ -1,6 +1,6 @@
 <template>
 	<a-layout id="main">
-		<AffixHeader @more="topDrawervisible=!topDrawervisible" />
+		<AffixHeader @more="isTopDrawerVisible=!isTopDrawerVisible" />
 		<a-layout>
 			<a-modal v-model:visible="captchaModelVisible" title="请输入验证码" @ok="handleCaptcha" @cancel="handleCaptcha">
 				<img :src="captchaSrc" />
@@ -48,21 +48,13 @@
 			const captchaResult = ref("")
 			const captchaModelVisible = ref(false)
 			async function handleCaptcha() {
-				ctx.$api.post("/bots/"+ ctx.$botStore.recentBotId.value +"/captchaResult", {result: captchaResult})
+				ctx.$api.post("/bots/"+ ctx.$botStore.recentBotId.value +"/captchaResult", {result: captchaResult.value})
 				captchaModelVisible.value = false
 			}
 			onMounted(async ()=>{
 				selectedNavKeys.push(ctx.$router.currentRoute.value.fullPath)
-				try{
-					await ctx.$api.get('/auth')
-				}catch(err){
-					if(err.response) ctx.$router.replace("/auth")
-					else ctx.$message.error('连接服务器失败！', 2)
-				}
 				ctx.$eventBus.onopen = () => {
 					ctx.$eventBus.registerHandler("sockJs.bot.log", (err, msg) => {
-						console.log("get log")
-						console.log(msg)
 						ctx.$logStore.pushLog(msg.body)
 					})
 					ctx.$eventBus.registerHandler("sockJs.bot.loginSolver", (err, msg) => {
@@ -71,6 +63,12 @@
 							captchaSrc.value = "data:image/bmp;base64," + msg.body.data
 						}
 					})
+				}
+				try{
+					await ctx.$api.get('/auth')
+				}catch(err){
+					if(err.response) ctx.$router.replace("/auth")
+					else ctx.$message.error('连接服务器失败！', 2)
 				}
 				ctx.$botStore.updateBots()
 			})

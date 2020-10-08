@@ -90,14 +90,14 @@
 					ctx.$message.success("删除成功！")
 					fetchScripts()
 				}catch(err){
-					this.$message.error("删除失败：" + err.checkData())
+					ctx.$message.error("删除失败：" + err.checkData())
 				}
 			}
 			async function editRunningScript(index) {
 				ctx.$router.push({
 					name: "editor",
 					params: {
-						name: scripts[index].file
+						name: scripts.value[index].file
 					}
 				})
 			}
@@ -121,12 +121,12 @@
 				showCreateFile.value = false
 			}
 			async function downloadRunningScript(index) {
-				const response = await ctx.$api.get("/files/" + scripts[index].file + "/file")
-				Downloader.downloadText(response.data, scripts[index].file)
+				const response = await ctx.$api.get("/files/" + scripts.value[index].file + "/file")
+				Downloader.downloadText(response.data, scripts.value[index].file)
 			}
 			async function removeFile(index) {
 				 try{
-					await ctx.$api.delete("/files/" + files[index].name)
+					await ctx.$api.delete("/files/" + files.value[index].name)
 					ctx.$message.success("删除成功！")
 					fetchFiles()
 				}catch(err){
@@ -137,14 +137,14 @@
 				ctx.$router.push({
 					name: "editor",
 					params: {
-						name: this.files[index].name
+						name: files.value[index].name
 					}
 				})
 			}
 			async function loadFile(index) {
-				files[index].loading = true
+				files.value[index].loading = true
 				try{
-					await ctx.$api.post("/scripts", files[index])
+					await ctx.$api.post("/scripts", files.value[index])
 					ctx.$notification.success({
 						message: '载入成功',
 						description: '成功加载一个脚本',
@@ -153,21 +153,21 @@
 				}catch(err){
 					ctx.$message.error("加载脚本失败：" + err.checkData())
 				}
-				files[index].loading = false
+				files.value[index].loading = false
 			}
 			async function downloadFile(index) {
-				const response = await ctx.$api.get("/files/" + files[index].name + "/file")
-				Downloader.downloadText(response.data, files[index].name)
+				const response = await ctx.$api.get("/files/" + files.value[index].name + "/file")
+				Downloader.downloadText(response.data, files.value[index].name)
 			}
 			async function onFileNameChange(index, key, name) {
-				const originName = this.files[index].name
+				const originName = files.value[index].name
 				try{
 					const response = ctx.$api.put("/files/" + originName + "/name", {name})
 					ctx.$message.success("重命名成功")
 					fetchFiles()
 				}catch(err){
 					ctx.$message.error("重命名失败：" + err.checkData())
-					files[index].name = originName
+					files.value[index].name = originName
 				}
 			}
 			async function uploadFileStatusChange(info) {

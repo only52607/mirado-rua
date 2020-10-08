@@ -1,6 +1,6 @@
 let serverUrl = 'http://localhost'
-let baseURL = serverUrl + '/api/v1'
 
+let baseURL = serverUrl + '/api/v1'
 let axiosInstance = axios.create({
 	baseURL,
 	timeout: 1000,
@@ -8,7 +8,6 @@ let axiosInstance = axios.create({
 		'Content-Type': 'application/x-www-form-urlencoded'
 	}
 })
-
 axiosInstance.baseURL = baseURL
 axiosInstance.serverUrl = serverUrl
 

@@ -41,6 +41,10 @@ const routes = [{
 			name: 'server',
 			component: () => import('../views/Server.vue'),
 		},
+		{
+			path: '',
+			redirect: 'console'
+		},
 	]},
 	{
 		path: '/auth',

@@ -52,9 +52,9 @@
 			const allLogs = ctx.$logStore.logs
 			const logs = computed(()=>{
 				return allLogs.filter(log=>{
-					if (botFilter != "all" && botFilter != log.from) return false
-					if (log.type == "net" && !showNetLog) return false
-					if (log.type == "bot" && !showBotLog) return false
+					if (botFilter.value != "all" && botFilter.value != log.from) return false
+					if (log.type == "net" && !showNetLog.value) return false
+					if (log.type == "bot" && !showBotLog.value) return false
 					return true
 				})
 			})
@@ -70,5 +70,4 @@
 </script>
 
 <style>
-
 </style>
